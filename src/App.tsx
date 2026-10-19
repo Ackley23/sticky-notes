@@ -553,7 +553,9 @@ export default function App() {
         note={current}
         dark={dark}
         onSave={update}
-        onClose={() => (detachedId && desktop ? void getCurrentWindow().hide() : setSelected(null))}
+        onClose={() =>
+          detachedId && desktop ? void invoke("close_note_window").catch(report) : setSelected(null)
+        }
         onDelete={(n) => void softDelete(n)}
         onPopout={() => void popout(current)}
         notify={setToast}

@@ -1,3 +1,4 @@
+mod note_windows;
 mod plugins;
 use rusqlite::{params, Connection, OptionalExtension};
 use std::{fs, path::Path, sync::Mutex};
@@ -7,7 +8,7 @@ const NOTE_MIN_WIDTH: f64 = 200.;
 const NOTE_MIN_HEIGHT: f64 = 160.;
 fn database(path: &Path) -> Result<Connection, String> {
     let conn = Connection::open(path).map_err(|e| e.to_string())?;
-    conn.execute_batch("PRAGMA journal_mode=WAL; PRAGMA synchronous=FULL; CREATE TABLE IF NOT EXISTS notes (id TEXT PRIMARY KEY NOT NULL, payload TEXT NOT NULL); CREATE TABLE IF NOT EXISTS preferences (key TEXT PRIMARY KEY NOT NULL, value TEXT NOT NULL);").map_err(|e|e.to_string())?;
+    conn.execute_batch("PRAGMA journal_mode=WAL; PRAGMA synchronous=FULL; CREATE TABLE IF NOT EXISTS notes (id TEXT PRIMARY KEY NOT NULL, payload TEXT NOT NULL); CREATE TABLE IF NOT EXISTS preferences (key TEXT PRIMARY KEY NOT NULL, value TEXT NOT NULL); CREATE TABLE IF NOT EXISTS desktop_windows (id TEXT PRIMARY KEY NOT NULL, placement TEXT NOT NULL, is_open INTEGER NOT NULL DEFAULT 1);").map_err(|e|e.to_string())?;
     Ok(conn)
 }
 fn valid_id(id: &str) -> Result<(), String> {
@@ -51,6 +52,13 @@ fn save_note(
 ) -> Result<(), String> {
     let conn = state.0.lock().map_err(|e| e.to_string())?;
     upsert(&conn, &note)?;
+    if note.get("deleted").is_some_and(|value| !value.is_null()) {
+        conn.execute(
+            "UPDATE desktop_windows SET is_open=0 WHERE id=?1",
+            [note["id"].as_str().ok_or("Missing id")?],
+        )
+        .map_err(|e| e.to_string())?;
+    }
     app.emit("notes-updated", note.get("id"))
         .map_err(|e| e.to_string())?;
     Ok(())
@@ -69,41 +77,16 @@ fn remove_note(
     Ok(())
 }
 #[tauri::command]
-async fn open_note(
-    app: tauri::AppHandle,
-    state: tauri::State<'_, Storage>,
-    id: String,
-    pinned: bool,
-) -> Result<(), String> {
-    valid_id(&id)?;
-    let frameless = read_frameless(&*state.0.lock().map_err(|e| e.to_string())?)?;
-    let label = format!("note-{}", id);
-    if let Some(w) = app.get_webview_window(&label) {
-        w.set_min_size(Some(tauri::LogicalSize::new(
-            NOTE_MIN_WIDTH,
-            NOTE_MIN_HEIGHT,
-        )))
-        .map_err(|e| e.to_string())?;
-        w.set_decorations(!frameless).map_err(|e| e.to_string())?;
-        w.set_always_on_top(pinned).map_err(|e| e.to_string())?;
-        w.emit("note-opened", ()).map_err(|e| e.to_string())?;
-        w.show().map_err(|e| e.to_string())?;
-        w.set_focus().map_err(|e| e.to_string())?;
-    } else {
-        tauri::WebviewWindowBuilder::new(
-            &app,
-            label,
-            tauri::WebviewUrl::App(format!("index.html?note={}", id).into()),
-        )
-        .title("Sticky Notes")
-        .inner_size(390., 500.)
-        .min_inner_size(NOTE_MIN_WIDTH, NOTE_MIN_HEIGHT)
-        .always_on_top(pinned)
-        .transparent(true)
-        .decorations(!frameless)
-        .build()
-        .map_err(|e| e.to_string())?;
+async fn open_note(app: tauri::AppHandle, id: String, pinned: bool) -> Result<(), String> {
+    note_windows::open(&app, &id, pinned, true)
+}
+#[tauri::command]
+fn close_note_window(window: tauri::WebviewWindow) -> Result<(), String> {
+    if !window.label().starts_with("note-") {
+        return Err("Not a note window".into());
     }
+    window.hide().map_err(|e| e.to_string())?;
+    note_windows::remember_closed(window.app_handle(), window.label());
     Ok(())
 }
 fn read_frameless(conn: &Connection) -> Result<bool, String> {
@@ -213,6 +196,7 @@ pub fn run() {
             fs::create_dir_all(&dir)?;
             let db = database(&dir.join("sticky-notes.sqlite3")).map_err(std::io::Error::other)?;
             app.manage(Storage(Mutex::new(db)));
+            note_windows::restore(app.handle().clone());
             Ok(())
         })
         .plugin(tauri_plugin_opener::init());
@@ -235,6 +219,7 @@ pub fn run() {
             save_note,
             remove_note,
             open_note,
+            close_note_window,
             get_note_window_frameless,
             set_note_window_frameless,
             update_tray_menu,

@@ -99,6 +99,10 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
                     } else {
                         // Hide child window instead of exiting when close is requested
                         let _ = window_clone.hide();
+                        crate::note_windows::remember_closed(
+                            window_clone.app_handle(),
+                            window_clone.label(),
+                        );
                     }
                 }
             });
