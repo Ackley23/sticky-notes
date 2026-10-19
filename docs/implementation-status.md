@@ -70,3 +70,13 @@ Windows 獨立便箋已重新實測：內容與富文字工具列正常顯示，
 - Windows 實測通過：開關立即隱藏現有便箋的系統標題列，程式重啟後新便箋沿用設定，取消勾選即恢復系統圖示及標題列按鈕。
 - 無標題列拖曳已實測：視窗由 (104, 96) 移至 (273, 202)，符合 125% 顯示縮放下的位移；編輯／完成按鈕不會觸發拖曳。
 - TypeScript、ESLint、Prettier、Vite、Rust SQLite 測試與 Windows debug 建置通過；截圖見 screenshots/desktop-frameless-note.png。
+
+### 英文／繁體中文／簡體中文（2026-10-19）
+
+- 恢復範本 i18next 與 react-i18next 架構，保留舊範本 translation namespace，新增便箋專用 sticky namespace。
+- 提供 English、繁體中文、简体中文，正規化 en-US、zh-TW、zh-HK、zh-CN、zh-SG 等系統語言代碼；選擇保存於 i18nextLng，日期與排序採對應地區格式。
+- 工作板、設定、編輯器、提醒、匯出／匯入提示、顏色與無障礙標籤均已接上三語文案。新安裝範例依初始語言建立，既有資料不改寫。
+- 跨視窗以 Tauri language-changed 事件與 storage 事件同步，主視窗同步翻譯系統匣顯示／退出選單。
+- 翻譯檢查：3 套語系、222 個一致鍵值、217 個靜態使用鍵值，插值與區域語言映射通過。pnpm i18n:check 已整合至 pnpm check。
+- 瀏覽器實測三語切換、重新載入保存與已開啟便箋即時同步。Windows 原生實測主視窗切換英文後，無標題列獨立便箋同步顯示 View mode / Edit / Always on top / Saved；原有內容保持原文。
+- TypeScript、ESLint、Prettier、Vite 與 Windows debug 建置通過。截圖：screenshots/settings-language-en.jpg、screenshots/desktop-note-en.png。
