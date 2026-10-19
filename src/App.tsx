@@ -930,258 +930,264 @@ export default function App() {
       )}
       {modal && (
         <div className="modal-backdrop" onClick={() => setModal(null)}>
-          <section className="dialog" onClick={(e) => e.stopPropagation()}>
-            <div className="dialog-header">
-              <h2>
-                {modal === "settings"
-                  ? tr("設定與偏好")
-                  : modal === "cloud"
-                    ? tr("讓便箋，走得更遠")
-                    : tr("鍵盤快捷鍵")}
-              </h2>
-              <IconButton icon={X} label={tr("關閉")} onClick={() => setModal(null)} />
-            </div>
-            {modal === "settings" ? (
-              <>
-                <label className="setting-row">
-                  {tr("介面語言")}
-                  <select
-                    aria-label={tr("介面語言")}
-                    value={i18n.resolvedLanguage || "en"}
-                    onChange={(event) => {
-                      void changeUiLanguage(event.target.value).catch((error) =>
-                        setToast(tr("無法切換語言：{{p0}}", { p0: String(error) }))
-                      );
+          <div className="dialog-frame" onClick={(e) => e.stopPropagation()}>
+            <section className="dialog">
+              <div className="dialog-header">
+                <h2>
+                  {modal === "settings"
+                    ? tr("設定與偏好")
+                    : modal === "cloud"
+                      ? tr("讓便箋，走得更遠")
+                      : tr("鍵盤快捷鍵")}
+                </h2>
+                <IconButton icon={X} label={tr("關閉")} onClick={() => setModal(null)} />
+              </div>
+              {modal === "settings" ? (
+                <>
+                  <label className="setting-row">
+                    {tr("介面語言")}
+                    <select
+                      aria-label={tr("介面語言")}
+                      value={i18n.resolvedLanguage || "en"}
+                      onChange={(event) => {
+                        void changeUiLanguage(event.target.value).catch((error) =>
+                          setToast(tr("無法切換語言：{{p0}}", { p0: String(error) }))
+                        );
+                      }}
+                    >
+                      {languages.map((language) => (
+                        <option key={language.value} value={language.value}>
+                          {language.label}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <p className="help">{tr("語言偏好會保存，並套用至所有便箋視窗。")}</p>
+                  <label className="setting-row">
+                    {tr("Windows 登入時自動啟動")}
+                    <input
+                      type="checkbox"
+                      checked={startupEnabled === true}
+                      disabled={
+                        !desktop || startupEnabled === null || startupBusy || !!startupError
+                      }
+                      onChange={(event) => void changeStartup(event.target.checked)}
+                    />
+                  </label>
+                  <p className="help">
+                    {tr(
+                      "自動啟動 Sticky Notes；僅適用 Windows 桌面版，不會變更其他程式的啟動設定。"
+                    )}
+                  </p>
+                  {startupError && (
+                    <p className="inline-error">
+                      {tr("無法存取自動啟動設定：{{p0}}", { p0: startupError })}
+                    </p>
+                  )}
+                  <label className="setting-row">
+                    {tr("外觀主題")}{" "}
+                    <select value={theme} onChange={(e) => setTheme(e.target.value as Theme)}>
+                      <option value="system">{tr("跟隨系統")}</option>
+                      <option value="light">{tr("淺色模式")}</option>
+                      <option value="dark">{tr("深色模式")}</option>
+                    </select>
+                  </label>
+                  <div className="theme-options">
+                    {(
+                      [
+                        { id: "light", icon: Sun, label: tr("明亮") },
+                        { id: "dark", icon: Moon, label: tr("深色") },
+                        { id: "system", icon: Monitor, label: tr("系統") },
+                      ] as const
+                    ).map(({ id, icon: Icon, label }) => (
+                      <button
+                        key={id}
+                        className={theme === id ? "selected" : ""}
+                        onClick={() => setTheme(id)}
+                      >
+                        <Icon size={22} />
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                  <label className="setting-row">
+                    {tr("隱藏獨立便箋的系統標題列")}
+                    <input
+                      type="checkbox"
+                      checked={framelessNotes}
+                      disabled={!windowPreferenceReady || windowPreferenceBusy}
+                      onChange={(e) => void changeNoteTitlebar(e.target.checked)}
+                    />
+                  </label>
+                  <p className="help">
+                    {tr(
+                      "隱藏系統圖示\u3001標題及最小化／最大化／關閉按鈕，立即套用至所有獨立便箋\u3002拖曳便箋上方的模式名稱可移動視窗，右上角 \u00D7 可關閉便箋\u3002"
+                    )}
+                  </p>
+                  <label className="setting-row">
+                    {tr("提醒音效")}
+                    <input
+                      type="checkbox"
+                      checked={sound}
+                      onChange={(e) => {
+                        setSound(e.target.checked);
+                        localStorage.setItem("sticky-sound", String(e.target.checked));
+                      }}
+                    />
+                  </label>
+                  <div className="setting-row">
+                    {tr("自訂提醒鈴聲")}
+                    <FilePicker>
+                      <input
+                        className="import-input"
+                        type="file"
+                        accept="audio/*"
+                        aria-label={tr("選擇提醒鈴聲")}
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          if (!file.type.startsWith("audio/") || file.size > 1024 * 1024) {
+                            setToast(tr("請選擇 1 MB 以下的音訊檔"));
+                            return;
+                          }
+                          const reader = new FileReader();
+                          reader.onload = () => {
+                            try {
+                              localStorage.setItem("sticky-ringtone", String(reader.result));
+                              setToast(tr("已設定自訂鈴聲"));
+                            } catch {
+                              setToast(tr("鈴聲儲存空間不足，請選擇較小的檔案"));
+                            }
+                          };
+                          reader.readAsDataURL(file);
+                        }}
+                      />
+                    </FilePicker>
+                  </div>
+                  <button
+                    className="text-button"
+                    onClick={() => {
+                      localStorage.removeItem("sticky-ringtone");
+                      setToast(tr("已恢復預設提示音"));
                     }}
                   >
-                    {languages.map((language) => (
-                      <option key={language.value} value={language.value}>
-                        {language.label}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <p className="help">{tr("語言偏好會保存，並套用至所有便箋視窗。")}</p>
-                <label className="setting-row">
-                  {tr("Windows 登入時自動啟動")}
-                  <input
-                    type="checkbox"
-                    checked={startupEnabled === true}
-                    disabled={!desktop || startupEnabled === null || startupBusy || !!startupError}
-                    onChange={(event) => void changeStartup(event.target.checked)}
-                  />
-                </label>
-                <p className="help">
-                  {tr("自動啟動 Sticky Notes；僅適用 Windows 桌面版，不會變更其他程式的啟動設定。")}
-                </p>
-                {startupError && (
-                  <p className="inline-error">
-                    {tr("無法存取自動啟動設定：{{p0}}", { p0: startupError })}
+                    {tr("恢復預設提示音")}
+                  </button>
+                  <p className="help">
+                    {tr(
+                      "提醒需要應用程式持續執行；關閉主視窗會保留在系統匣\u3002休眠期間的提醒會在恢復後顯示\u3002"
+                    )}
                   </p>
-                )}
-                <label className="setting-row">
-                  {tr("外觀主題")}{" "}
-                  <select value={theme} onChange={(e) => setTheme(e.target.value as Theme)}>
-                    <option value="system">{tr("跟隨系統")}</option>
-                    <option value="light">{tr("淺色模式")}</option>
-                    <option value="dark">{tr("深色模式")}</option>
-                  </select>
-                </label>
-                <div className="theme-options">
-                  {(
-                    [
-                      { id: "light", icon: Sun, label: tr("明亮") },
-                      { id: "dark", icon: Moon, label: tr("深色") },
-                      { id: "system", icon: Monitor, label: tr("系統") },
-                    ] as const
-                  ).map(({ id, icon: Icon, label }) => (
+                  <div className="setting-row">
+                    {tr("資料備份")}
                     <button
-                      key={id}
-                      className={theme === id ? "selected" : ""}
-                      onClick={() => setTheme(id)}
+                      className="secondary-button"
+                      onClick={() => {
+                        download(
+                          `sticky-notes-${new Date().toISOString().slice(0, 10)}.json`,
+                          JSON.stringify(notes, null, 2),
+                          "application/json"
+                        );
+                        setToast(tr("已匯出備份，包含私人便箋的明文內容"));
+                      }}
                     >
-                      <Icon size={22} />
-                      {label}
+                      <Download size={15} />
+                      {tr("匯出全部 JSON")}
                     </button>
+                  </div>
+                  <p className="help">
+                    {tr(
+                      "防窺鎖僅遮蔽畫面，不會加密本機檔案\u3002備份含所有便箋內容，請妥善保存\u3002"
+                    )}
+                  </p>
+                  <div className="setting-row">
+                    {tr("還原備份")}
+                    <FilePicker>
+                      <input
+                        className="import-input"
+                        type="file"
+                        accept=".json"
+                        onChange={async (e) => {
+                          const f = e.target.files?.[0];
+                          if (!f) return;
+                          try {
+                            const input = JSON.parse(await f.text());
+                            if (
+                              !Array.isArray(input) ||
+                              !input.every(
+                                (n) =>
+                                  typeof n.id === "string" &&
+                                  /^[a-f0-9-]{36}$/i.test(n.id) &&
+                                  typeof n.html === "string" &&
+                                  typeof n.title === "string" &&
+                                  Array.isArray(n.tags)
+                              )
+                            )
+                              throw new Error(tr("備份格式不正確"));
+                            for (const item of input) {
+                              const base = createNote();
+                              await saveNote({
+                                ...base,
+                                ...item,
+                                id: base.id,
+                                html: sanitize(item.html),
+                                color: Math.max(0, Math.min(7, Number(item.color) || 0)),
+                                tags: item.tags.filter((t: unknown) => typeof t === "string"),
+                              });
+                            }
+                            await refresh();
+                            setToast(tr("備份已匯入為新便箋"));
+                          } catch (e) {
+                            report(e);
+                          }
+                          e.target.value = "";
+                        }}
+                      />
+                    </FilePicker>
+                  </div>
+                </>
+              ) : modal === "cloud" ? (
+                <>
+                  <div className="cloud-hero">
+                    <Cloud size={42} />
+                  </div>
+                  <p>{tr("目前版本採本機優先，無需帳戶即可使用\u3002")}</p>
+                  <p>
+                    {tr(
+                      "Google Drive\u3001OneDrive 雙向同步與手機 Widget 規畫於後續版本，尚未連接任何雲端服務\u3002"
+                    )}
+                  </p>
+                  <div className="cloud-detail">
+                    <Check size={17} />
+                    {tr("本機自動儲存與 JSON 備份已可使用")}
+                  </div>
+                  <button className="primary-button" onClick={() => setModal("settings")}>
+                    {tr("先備份我的便箋")}
+                  </button>
+                </>
+              ) : (
+                <div className="shortcut-list">
+                  {[
+                    [tr("新增便箋"), "Ctrl / ⌘ + N"],
+                    [tr("刪除目前便箋"), "Ctrl / ⌘ + D"],
+                    [tr("回到總清單"), "Ctrl / ⌘ + H"],
+                    [tr("搜尋便箋"), "Ctrl / ⌘ + F"],
+                    [tr("粗體 / 斜體 / 底線"), "Ctrl / ⌘ + B / I / U"],
+                    [tr("刪除線"), "Ctrl / ⌘ + T"],
+                    [tr("項目清單"), "Ctrl / ⌘ + Shift + L"],
+                    [tr("放大 / 縮小字級"), "Ctrl / ⌘ + Shift + > / <"],
+                    [tr("全域新增（桌面版）"), "Ctrl / ⌘ + Alt + N"],
+                    [tr("全域喚醒（桌面版）"), "Ctrl / ⌘ + Alt + H"],
+                  ].map(([a, b]) => (
+                    <div key={a}>
+                      <span>{a}</span>
+                      <kbd>{b}</kbd>
+                    </div>
                   ))}
                 </div>
-                <label className="setting-row">
-                  {tr("隱藏獨立便箋的系統標題列")}
-                  <input
-                    type="checkbox"
-                    checked={framelessNotes}
-                    disabled={!windowPreferenceReady || windowPreferenceBusy}
-                    onChange={(e) => void changeNoteTitlebar(e.target.checked)}
-                  />
-                </label>
-                <p className="help">
-                  {tr(
-                    "隱藏系統圖示\u3001標題及最小化／最大化／關閉按鈕，立即套用至所有獨立便箋\u3002拖曳便箋上方的模式名稱可移動視窗，右上角 \u00D7 可關閉便箋\u3002"
-                  )}
-                </p>
-                <label className="setting-row">
-                  {tr("提醒音效")}
-                  <input
-                    type="checkbox"
-                    checked={sound}
-                    onChange={(e) => {
-                      setSound(e.target.checked);
-                      localStorage.setItem("sticky-sound", String(e.target.checked));
-                    }}
-                  />
-                </label>
-                <div className="setting-row">
-                  {tr("自訂提醒鈴聲")}
-                  <FilePicker>
-                    <input
-                      className="import-input"
-                      type="file"
-                      accept="audio/*"
-                      aria-label={tr("選擇提醒鈴聲")}
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (!file) return;
-                        if (!file.type.startsWith("audio/") || file.size > 1024 * 1024) {
-                          setToast(tr("請選擇 1 MB 以下的音訊檔"));
-                          return;
-                        }
-                        const reader = new FileReader();
-                        reader.onload = () => {
-                          try {
-                            localStorage.setItem("sticky-ringtone", String(reader.result));
-                            setToast(tr("已設定自訂鈴聲"));
-                          } catch {
-                            setToast(tr("鈴聲儲存空間不足，請選擇較小的檔案"));
-                          }
-                        };
-                        reader.readAsDataURL(file);
-                      }}
-                    />
-                  </FilePicker>
-                </div>
-                <button
-                  className="text-button"
-                  onClick={() => {
-                    localStorage.removeItem("sticky-ringtone");
-                    setToast(tr("已恢復預設提示音"));
-                  }}
-                >
-                  {tr("恢復預設提示音")}
-                </button>
-                <p className="help">
-                  {tr(
-                    "提醒需要應用程式持續執行；關閉主視窗會保留在系統匣\u3002休眠期間的提醒會在恢復後顯示\u3002"
-                  )}
-                </p>
-                <div className="setting-row">
-                  {tr("資料備份")}
-                  <button
-                    className="secondary-button"
-                    onClick={() => {
-                      download(
-                        `sticky-notes-${new Date().toISOString().slice(0, 10)}.json`,
-                        JSON.stringify(notes, null, 2),
-                        "application/json"
-                      );
-                      setToast(tr("已匯出備份，包含私人便箋的明文內容"));
-                    }}
-                  >
-                    <Download size={15} />
-                    {tr("匯出全部 JSON")}
-                  </button>
-                </div>
-                <p className="help">
-                  {tr(
-                    "防窺鎖僅遮蔽畫面，不會加密本機檔案\u3002備份含所有便箋內容，請妥善保存\u3002"
-                  )}
-                </p>
-                <div className="setting-row">
-                  {tr("還原備份")}
-                  <FilePicker>
-                    <input
-                      className="import-input"
-                      type="file"
-                      accept=".json"
-                      onChange={async (e) => {
-                        const f = e.target.files?.[0];
-                        if (!f) return;
-                        try {
-                          const input = JSON.parse(await f.text());
-                          if (
-                            !Array.isArray(input) ||
-                            !input.every(
-                              (n) =>
-                                typeof n.id === "string" &&
-                                /^[a-f0-9-]{36}$/i.test(n.id) &&
-                                typeof n.html === "string" &&
-                                typeof n.title === "string" &&
-                                Array.isArray(n.tags)
-                            )
-                          )
-                            throw new Error(tr("備份格式不正確"));
-                          for (const item of input) {
-                            const base = createNote();
-                            await saveNote({
-                              ...base,
-                              ...item,
-                              id: base.id,
-                              html: sanitize(item.html),
-                              color: Math.max(0, Math.min(7, Number(item.color) || 0)),
-                              tags: item.tags.filter((t: unknown) => typeof t === "string"),
-                            });
-                          }
-                          await refresh();
-                          setToast(tr("備份已匯入為新便箋"));
-                        } catch (e) {
-                          report(e);
-                        }
-                        e.target.value = "";
-                      }}
-                    />
-                  </FilePicker>
-                </div>
-              </>
-            ) : modal === "cloud" ? (
-              <>
-                <div className="cloud-hero">
-                  <Cloud size={42} />
-                </div>
-                <p>{tr("目前版本採本機優先，無需帳戶即可使用\u3002")}</p>
-                <p>
-                  {tr(
-                    "Google Drive\u3001OneDrive 雙向同步與手機 Widget 規畫於後續版本，尚未連接任何雲端服務\u3002"
-                  )}
-                </p>
-                <div className="cloud-detail">
-                  <Check size={17} />
-                  {tr("本機自動儲存與 JSON 備份已可使用")}
-                </div>
-                <button className="primary-button" onClick={() => setModal("settings")}>
-                  {tr("先備份我的便箋")}
-                </button>
-              </>
-            ) : (
-              <div className="shortcut-list">
-                {[
-                  [tr("新增便箋"), "Ctrl / ⌘ + N"],
-                  [tr("刪除目前便箋"), "Ctrl / ⌘ + D"],
-                  [tr("回到總清單"), "Ctrl / ⌘ + H"],
-                  [tr("搜尋便箋"), "Ctrl / ⌘ + F"],
-                  [tr("粗體 / 斜體 / 底線"), "Ctrl / ⌘ + B / I / U"],
-                  [tr("刪除線"), "Ctrl / ⌘ + T"],
-                  [tr("項目清單"), "Ctrl / ⌘ + Shift + L"],
-                  [tr("放大 / 縮小字級"), "Ctrl / ⌘ + Shift + > / <"],
-                  [tr("全域新增（桌面版）"), "Ctrl / ⌘ + Alt + N"],
-                  [tr("全域喚醒（桌面版）"), "Ctrl / ⌘ + Alt + H"],
-                ].map(([a, b]) => (
-                  <div key={a}>
-                    <span>{a}</span>
-                    <kbd>{b}</kbd>
-                  </div>
-                ))}
-              </div>
-            )}
-          </section>
+              )}
+            </section>
+          </div>
         </div>
       )}
       {alertNote && (

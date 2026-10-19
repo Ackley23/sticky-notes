@@ -1100,6 +1100,44 @@ h1 > span {
   line-height: 1.9;
   color: var(--muted);
 }
+.dialog-frame {
+  width: 500px;
+  max-width: 100%;
+  padding: 6px;
+  border: 1px solid var(--line);
+  border-radius: 15px;
+  overflow: hidden;
+  background: var(--surface);
+  box-shadow: 0 20px 80px #16152233;
+}
+.dialog-frame > .dialog {
+  width: 100%;
+  max-height: calc(90vh - 14px);
+  padding: 21px;
+  border: 0;
+  border-radius: 9px;
+  box-shadow: none;
+  scrollbar-gutter: stable;
+}
+.dialog-frame > .dialog::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.dialog-frame > .dialog::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--muted) 45%, transparent);
+  border-radius: 6px;
+}
+.dialog-frame > .dialog::-webkit-scrollbar-thumb:hover {
+  background: var(--muted);
+}
+.dialog-frame > .dialog::-webkit-scrollbar-track {
+  background: transparent;
+}
+.dialog-frame > .dialog::-webkit-scrollbar-button {
+  display: none;
+  width: 0;
+  height: 0;
+}
 .dialog > .dialog-header {
   margin-bottom: 21px;
 }
@@ -1609,6 +1647,9 @@ body:has(.detached) {
   }
   .dialog {
     padding: 20px;
+  }
+  .dialog-frame > .dialog {
+    padding: 14px;
   }
   .shortcut-list > div {
     flex-wrap: wrap;
