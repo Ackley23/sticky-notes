@@ -1728,3 +1728,43 @@ h1 > span {
 .detached .editor-header > span svg {
   pointer-events: none;
 }
+.setting-row input[type="checkbox"] {
+  flex-shrink: 0;
+}
+.setting-row select {
+  max-width: 55%;
+}
+.note-pin-button,
+.note-mode-button {
+  flex-shrink: 0;
+}
+.note-view-title h1 {
+  letter-spacing: normal;
+}
+.file-picker {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 55%;
+  min-height: 33px;
+  padding: 7px 12px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--base);
+  font-size: 11px;
+  cursor: pointer;
+  overflow: hidden;
+}
+.file-picker .import-input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  width: 100%;
+  max-width: none;
+  cursor: pointer;
+}
+.file-picker:focus-within {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}

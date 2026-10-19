@@ -1,14 +1,63 @@
+import { tr } from "./i18n";
 import { invoke, isTauri } from "@tauri-apps/api/core";
 export const desktop = isTauri();
 export const colors = [
-  { name: "暖陽黃", value: "#F8E9A1", dark: "#51492A" },
-  { name: "鼠尾草", value: "#DCE9CC", dark: "#354632" },
-  { name: "霧藍", value: "#D7E8F6", dark: "#2D4053" },
-  { name: "薰衣草", value: "#E8DFF5", dark: "#453852" },
-  { name: "蜜桃", value: "#F9DFD1", dark: "#563C33" },
-  { name: "玫瑰", value: "#F4DCE4", dark: "#543541" },
-  { name: "薄荷", value: "#D5EDE6", dark: "#2C4943" },
-  { name: "石灰", value: "#E9E9E5", dark: "#3D4148" },
+  {
+    get name() {
+      return tr("暖陽黃");
+    },
+    value: "#F8E9A1",
+    dark: "#51492A",
+  },
+  {
+    get name() {
+      return tr("鼠尾草");
+    },
+    value: "#DCE9CC",
+    dark: "#354632",
+  },
+  {
+    get name() {
+      return tr("霧藍");
+    },
+    value: "#D7E8F6",
+    dark: "#2D4053",
+  },
+  {
+    get name() {
+      return tr("薰衣草");
+    },
+    value: "#E8DFF5",
+    dark: "#453852",
+  },
+  {
+    get name() {
+      return tr("蜜桃");
+    },
+    value: "#F9DFD1",
+    dark: "#563C33",
+  },
+  {
+    get name() {
+      return tr("玫瑰");
+    },
+    value: "#F4DCE4",
+    dark: "#543541",
+  },
+  {
+    get name() {
+      return tr("薄荷");
+    },
+    value: "#D5EDE6",
+    dark: "#2C4943",
+  },
+  {
+    get name() {
+      return tr("石灰");
+    },
+    value: "#E9E9E5",
+    dark: "#3D4148",
+  },
 ];
 export interface Note {
   id: string;
@@ -221,7 +270,7 @@ export function markdown(n: Note) {
       case "A":
         return `[${body}](${el.getAttribute("href") || ""})`;
       case "IMG":
-        return `\n![圖片](${el.getAttribute("src") || ""})\n`;
+        return tr("\n![圖片]({{p0}})\n", { p0: el.getAttribute("src") || "" });
       case "INPUT":
         return el.hasAttribute("checked") ? "- [x] " : "- [ ] ";
       case "LI":
@@ -235,7 +284,7 @@ export function markdown(n: Note) {
         return body;
     }
   }
-  return `# ${n.title || "未命名便箋"}\n\n${walk(d.body).trim()}\n\n${n.tags.map((t) => "#" + t).join(" ")}`;
+  return `# ${n.title || tr("未命名便箋")}\n\n${walk(d.body).trim()}\n\n${n.tags.map((t) => "#" + t).join(" ")}`;
 }
 export function textColor(hex: string) {
   const channels = [1, 3, 5]

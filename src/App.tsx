@@ -1,4 +1,6 @@
-import { Fragment, useCallback, useEffect, useRef, useState } from "react";
+import { tr, dateLocale, languages, changeUiLanguage } from "./i18n";
+import { useTranslation } from "react-i18next";
+import { type ReactNode, Fragment, useCallback, useEffect, useRef, useState } from "react";
 import {
   StickyNote,
   Plus,
@@ -63,15 +65,16 @@ import {
 type Filter = "all" | "pinned" | "reminder" | "archive" | "trash";
 type Theme = "light" | "dark" | "system";
 const detachedId = new URLSearchParams(location.search).get("note");
-const navs: { id: Filter; label: string; icon: LucideIcon }[] = [
-  { id: "all", label: "所有便箋", icon: StickyNote },
-  { id: "pinned", label: "已釘選", icon: Pin },
-  { id: "reminder", label: "提醒事項", icon: Bell },
-  { id: "archive", label: "封存便箋", icon: Archive },
-  { id: "trash", label: "垃圾桶", icon: Trash2 },
-];
 const date = (t: number) =>
-  new Date(t).toLocaleDateString("zh-TW", { month: "short", day: "numeric" });
+  new Date(t).toLocaleDateString(dateLocale(), { month: "short", day: "numeric" });
+function FilePicker({ children }: { children: ReactNode }) {
+  return (
+    <label className="file-picker">
+      <span>{tr("選擇檔案")}</span>
+      {children}
+    </label>
+  );
+}
 function IconButton({
   icon: Icon,
   label,
@@ -97,45 +100,57 @@ function IconButton({
 function seed(): Note[] {
   return [
     {
-      title: "留一點空間，給好點子。",
-      html: "<p>不必急著整理所有思緒。</p><p>隨手寫下，讓靈感有個落腳的地方。 ✨</p><br><p><b>今天，也從一張小小的便箋開始。</b></p>",
+      title: tr("留一點空間，給好點子。"),
+      html: tr(
+        "<p>不必急著整理所有思緒。</p><p>隨手寫下，讓靈感有個落腳的地方。 ✨</p><br><p><b>今天，也從一張小小的便箋開始。</b></p>"
+      ),
       color: 0,
-      tags: ["靈感"],
+      tags: [tr("靈感")],
       pinned: true,
     },
     {
-      title: "本週的小目標",
-      html: '<div><input type="checkbox" checked> 整理工作桌面</div><div><input type="checkbox"> 讀完一本書的第三章</div><div><input type="checkbox"> 散步 30 分鐘</div><div><input type="checkbox"> 留時間給自己</div>',
+      title: tr("本週的小目標"),
+      html: tr(
+        '<div><input type="checkbox" checked> 整理工作桌面</div><div><input type="checkbox"> 讀完一本書的第三章</div><div><input type="checkbox"> 散步 30 分鐘</div><div><input type="checkbox"> 留時間給自己</div>'
+      ),
       color: 1,
-      tags: ["生活"],
+      tags: [tr("生活")],
       pinned: true,
     },
     {
-      title: "讓工作更順手的快捷鍵",
-      html: "<p><b>Ctrl + N</b>　新增便箋</p><p><b>Ctrl + B</b>　粗體文字</p><p><b>Ctrl + Shift + L</b>　項目清單</p><br><p>點擊右上角 ↗，把便箋放到桌面。</p>",
+      title: tr("讓工作更順手的快捷鍵"),
+      html: tr(
+        "<p><b>Ctrl + N</b>　新增便箋</p><p><b>Ctrl + B</b>　粗體文字</p><p><b>Ctrl + Shift + L</b>　項目清單</p><br><p>點擊右上角 ↗，把便箋放到桌面。</p>"
+      ),
       color: 2,
-      tags: ["工作"],
+      tags: [tr("工作")],
       pinned: false,
     },
     {
-      title: "下一次旅行",
-      html: "<p>想去台東看看海 🌊</p><br><p>找一間有陽台的民宿，帶上相機，走沒有安排好的路。</p><p>記得：不用把行程排得太滿。</p>",
+      title: tr("下一次旅行"),
+      html: tr(
+        "<p>想去台東看看海 🌊</p><br><p>找一間有陽台的民宿，帶上相機，走沒有安排好的路。</p><p>記得：不用把行程排得太滿。</p>"
+      ),
       color: 3,
-      tags: ["生活", "靈感"],
+      tags: [tr("生活"), tr("靈感")],
       pinned: false,
     },
     {
-      title: "設計會議筆記",
-      html: "<p>好的工具，應該安靜地陪伴。</p><br><ul><li>減少打斷，保留專注</li><li>用顏色讓資訊自然分類</li><li>每一次輸入都值得被保存</li></ul>",
+      title: tr("設計會議筆記"),
+      html: tr(
+        "<p>好的工具，應該安靜地陪伴。</p><br><ul><li>減少打斷，保留專注</li><li>用顏色讓資訊自然分類</li><li>每一次輸入都值得被保存</li></ul>"
+      ),
       color: 4,
-      tags: ["工作"],
+      tags: [tr("工作")],
       pinned: false,
     },
     {
-      title: "一些值得記住的小事",
-      html: "<p>下午的陽光、剛煮好的咖啡，</p><p>還有突然想到的一個好點子。</p><br><p>把日常喜歡的片刻，慢慢收集起來。 ☕</p>",
+      title: tr("一些值得記住的小事"),
+      html: tr(
+        "<p>下午的陽光、剛煮好的咖啡，</p><p>還有突然想到的一個好點子。</p><br><p>把日常喜歡的片刻，慢慢收集起來。 ☕</p>"
+      ),
       color: 5,
-      tags: ["生活"],
+      tags: [tr("生活")],
       pinned: false,
     },
   ].map((n, i) => ({
@@ -146,8 +161,19 @@ function seed(): Note[] {
     updated: Date.now() - i * 3600000,
   }));
 }
-
 export default function App() {
+  const { i18n } = useTranslation("sticky");
+  const navs: {
+    id: Filter;
+    label: string;
+    icon: LucideIcon;
+  }[] = [
+    { id: "all", label: tr("所有便箋"), icon: StickyNote },
+    { id: "pinned", label: tr("已釘選"), icon: Pin },
+    { id: "reminder", label: tr("提醒事項"), icon: Bell },
+    { id: "archive", label: tr("封存便箋"), icon: Archive },
+    { id: "trash", label: tr("垃圾桶"), icon: Trash2 },
+  ];
   const [notes, setNotes] = useState<Note[]>([]);
   const [ready, setReady] = useState(false);
   const [filter, setFilter] = useState<Filter>("all");
@@ -182,7 +208,7 @@ export default function App() {
         }
       })
       .catch((error) => {
-        if (live) setToast(`無法讀取視窗偏好：${String(error)}`);
+        if (live) setToast(tr("無法讀取視窗偏好：{{p0}}", { p0: String(error) }));
       });
     return () => {
       live = false;
@@ -194,9 +220,11 @@ export default function App() {
       if (desktop) await invoke("set_note_window_frameless", { frameless });
       else localStorage.setItem("sticky-frameless-notes", String(frameless));
       setFramelessNotes(frameless);
-      setToast(desktop ? "已套用獨立便箋的標題列設定" : "已保存預覽偏好；視窗效果請使用桌面版檢視");
+      setToast(
+        desktop ? tr("已套用獨立便箋的標題列設定") : tr("已保存預覽偏好；視窗效果請使用桌面版檢視")
+      );
     } catch (error) {
-      setToast(`無法套用視窗偏好：${String(error)}`);
+      setToast(tr("無法套用視窗偏好：{{p0}}", { p0: String(error) }));
     } finally {
       setWindowPreferenceBusy(false);
     }
@@ -207,7 +235,8 @@ export default function App() {
   }, [notes]);
   const searchRef = useRef<HTMLInputElement>(null);
   const report = useCallback(
-    (e: unknown) => setError(`儲存或讀取失敗：${String(e)}。請保留視窗並重試。`),
+    (e: unknown) =>
+      setError(tr("儲存或讀取失敗：{{p0}}\u3002請保留視窗並重試\u3002", { p0: String(e) })),
     []
   );
   const refresh = useCallback(async () => {
@@ -322,7 +351,7 @@ export default function App() {
     async (n: Note) => {
       await update({ ...n, deleted: Date.now() });
       if (!detachedId) setSelected(null);
-      setToast("已移至垃圾桶，30 天內可還原");
+      setToast(tr("已移至垃圾桶，30 天內可還原"));
     },
     [update]
   );
@@ -375,7 +404,7 @@ export default function App() {
         });
         if (disposed) await unregister(shortcuts[1]);
       } catch (e) {
-        setToast("全域快捷鍵註冊失敗：" + String(e));
+        setToast(tr("全域快捷鍵註冊失敗：") + String(e));
       }
     })();
     return () => {
@@ -401,7 +430,7 @@ export default function App() {
         }
         if (sound && localStorage.getItem("sticky-ringtone")) {
           const audio = new Audio(localStorage.getItem("sticky-ringtone")!);
-          void audio.play().catch(() => setToast("音效無法播放，請在設定重新選擇鈴聲"));
+          void audio.play().catch(() => setToast(tr("音效無法播放，請在設定重新選擇鈴聲")));
         } else if (sound) {
           const ctx = new AudioContext();
           const osc = ctx.createOscillator();
@@ -456,25 +485,25 @@ export default function App() {
     )
     .sort((a, b) =>
       sort === "title"
-        ? a.title.localeCompare(b.title, "zh-TW")
+        ? a.title.localeCompare(b.title, dateLocale())
         : sort === "created"
           ? b.created - a.created
           : Number(b.pinned) - Number(a.pinned) || b.updated - a.updated
     );
   async function popout(n: Note) {
     try {
-      if (!(await openNote(n))) setToast("獨立視窗請使用桌面版開啟");
+      if (!(await openNote(n))) setToast(tr("獨立視窗請使用桌面版開啟"));
     } catch (e) {
       report(e);
     }
   }
   async function purge(n: Note) {
-    if (!confirm("永久刪除這張便箋？此操作無法還原。")) return;
+    if (!confirm(tr("永久刪除這張便箋？此操作無法還原\u3002"))) return;
     try {
       await removeNote(n.id);
       await refresh();
       setSelected(null);
-      setToast("便箋已永久刪除");
+      setToast(tr("便箋已永久刪除"));
     } catch (e) {
       report(e);
     }
@@ -507,7 +536,7 @@ export default function App() {
         {editor || (
           <div className="empty">
             <StickyNote size={40} />
-            <h2>{ready ? "便箋已移至垃圾桶" : "正在開啟便箋…"}</h2>
+            <h2>{ready ? tr("便箋已移至垃圾桶") : tr("正在開啟便箋\u2026")}</h2>
           </div>
         )}
       </div>
@@ -520,14 +549,15 @@ export default function App() {
             <StickyNote size={23} />
           </span>
           <div>
-            Sticky Notes<small>讓想法，有個地方。</small>
+            Sticky Notes<small>{tr("讓想法，有個地方\u3002")}</small>
           </div>
         </div>
         <button className="new-button" onClick={() => void add()}>
           <Plus size={19} />
-          新增便箋<kbd>Ctrl N</kbd>
+          {tr("新增便箋")}
+          <kbd>Ctrl N</kbd>
         </button>
-        <div className="nav-caption">我的工作空間</div>
+        <div className="nav-caption">{tr("我的工作空間")}</div>
         <nav>
           {navs.map(({ id, label, icon: Icon }) => (
             <button
@@ -547,7 +577,8 @@ export default function App() {
         </nav>
         <div className="sidebar-line" />
         <div className="nav-caption">
-          標籤 <Tag size={13} />
+          {tr("標籤")}
+          <Tag size={13} />
         </div>
         <div className="tag-nav">
           {tags.map((t, i) => (
@@ -570,58 +601,64 @@ export default function App() {
             <span className="cloud-symbol">
               <Cloud size={21} />
             </span>
-            <b>把想法，帶著走</b>
-            <p>探索跨裝置同步</p>
+            <b>{tr("把想法，帶著走")}</b>
+            <p>{tr("探索跨裝置同步")}</p>
             <span>
-              雲端同步規畫 <ArrowUpRight size={13} />
+              {tr("雲端同步規畫")}
+              <ArrowUpRight size={13} />
             </span>
           </button>
           <button className="settings-link" onClick={() => setModal("settings")}>
             <Settings size={17} />
-            設定與偏好<small>v0.1.0</small>
+            {tr("設定與偏好")}
+            <small>v0.1.0</small>
           </button>
         </div>
       </aside>
       <main className="workspace">
         <header className="topbar">
           <div className="breadcrumb">
-            我的工作空間 <span>/</span>{" "}
-            <b>{tag ? `# ${tag}` : navs.find((n) => n.id === filter)?.label}</b>
+            {tr("我的工作空間")}
+            <span>/</span> <b>{tag ? `# ${tag}` : navs.find((n) => n.id === filter)?.label}</b>
           </div>
           <div className="top-actions">
             <span className="local-status">
               <span />
-              本機自動儲存
+              {tr("本機自動儲存")}
             </span>
             <IconButton
               icon={dark ? Moon : Sun}
-              label="切換深淺色"
+              label={tr("切換深淺色")}
               onClick={() => setTheme(dark ? "light" : "dark")}
             />
-            <button className="avatar" onClick={() => setModal("settings")} aria-label="個人設定">
-              我
+            <button
+              className="avatar"
+              onClick={() => setModal("settings")}
+              aria-label={tr("個人設定")}
+            >
+              {tr("我")}
             </button>
           </div>
         </header>
         <div className="workspace-content">
           <div className="page-heading">
             <div>
-              <div className="eyebrow">你的日常，隨手記下</div>
+              <div className="eyebrow">{tr("你的日常，隨手記下")}</div>
               <h1>
                 {tag ? `# ${tag}` : navs.find((n) => n.id === filter)?.label}
                 <span>{filtered.length}</span>
               </h1>
               <p>
                 {filter === "trash"
-                  ? "刪除的便箋會在這裡保留 30 天。"
+                  ? tr("刪除的便箋會在這裡保留 30 天\u3002")
                   : filter === "reminder"
-                    ? "留給未來的自己，一個溫柔的提醒。"
-                    : "收好每一個靈感，也記住每一件重要的小事。"}
+                    ? tr("留給未來的自己，一個溫柔的提醒\u3002")
+                    : tr("收好每一個靈感，也記住每一件重要的小事\u3002")}
               </p>
             </div>
             <button className="secondary-button" onClick={() => setModal("shortcuts")}>
               <Keyboard size={16} />
-              快捷鍵
+              {tr("快捷鍵")}
             </button>
           </div>
           {error && (
@@ -633,7 +670,7 @@ export default function App() {
                   void refresh();
                 }}
               >
-                重試
+                {tr("重試")}
               </button>
             </div>
           )}
@@ -642,12 +679,12 @@ export default function App() {
               <Search size={18} />
               <input
                 ref={searchRef}
-                placeholder="搜尋便箋內容、標題或標籤…"
+                placeholder={tr("搜尋便箋內容\u3001標題或標籤\u2026")}
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
               />
               {query ? (
-                <IconButton icon={X} label="清除搜尋" onClick={() => setQuery("")} />
+                <IconButton icon={X} label={tr("清除搜尋")} onClick={() => setQuery("")} />
               ) : (
                 <kbd>Ctrl F</kbd>
               )}
@@ -658,24 +695,24 @@ export default function App() {
                 <select
                   value={sort}
                   onChange={(e) => setSort(e.target.value)}
-                  aria-label="排序方式"
+                  aria-label={tr("排序方式")}
                 >
-                  <option value="updated">最近編輯</option>
-                  <option value="created">建立時間</option>
-                  <option value="title">標題排序</option>
+                  <option value="updated">{tr("最近編輯")}</option>
+                  <option value="created">{tr("建立時間")}</option>
+                  <option value="title">{tr("標題排序")}</option>
                 </select>
                 <ChevronDown size={13} />
               </label>
               <div className="view-toggle">
                 <IconButton
                   icon={LayoutGrid}
-                  label="網格檢視"
+                  label={tr("網格檢視")}
                   active={!list}
                   onClick={() => setList(false)}
                 />
                 <IconButton
                   icon={List}
-                  label="清單檢視"
+                  label={tr("清單檢視")}
                   active={list}
                   onClick={() => setList(true)}
                 />
@@ -683,12 +720,12 @@ export default function App() {
             </div>
           </div>
           <div className="color-filter">
-            <span>便箋顏色</span>
+            <span>{tr("便箋顏色")}</span>
             <button
               className={`all-colors ${colorFilter === null ? "chosen" : ""}`}
               onClick={() => setColorFilter(null)}
             >
-              全部
+              {tr("全部")}
             </button>
             {colors.map((c, i) => (
               <button
@@ -696,14 +733,17 @@ export default function App() {
                 className={`color-dot ${colorFilter === i ? "chosen" : ""}`}
                 style={{ background: c.value }}
                 title={c.name}
-                aria-label={`篩選${c.name}`}
+                aria-label={tr("篩選{{p0}}", { p0: c.name })}
                 onClick={() => setColorFilter(colorFilter === i ? null : i)}
               />
             ))}
-            <span className="result-count">{filtered.length} 張便箋</span>
+            <span className="result-count">
+              {filtered.length}
+              {tr("張便箋")}
+            </span>
           </div>
           {!ready ? (
-            <div className="empty">正在載入便箋…</div>
+            <div className="empty">{tr("正在載入便箋\u2026")}</div>
           ) : (
             <div className={`notes-grid ${list ? "list-view" : ""}`}>
               {filtered.map((n) => (
@@ -719,7 +759,9 @@ export default function App() {
                   onClick={() => setSelected(n.id)}
                   tabIndex={0}
                   role="button"
-                  aria-label={`開啟${n.pinHash ? "已鎖定便箋" : n.title || "未命名便箋"}`}
+                  aria-label={tr("開啟{{p0}}", {
+                    p0: n.pinHash ? tr("已鎖定便箋") : n.title || tr("未命名便箋"),
+                  })}
                   onKeyDown={(e) => {
                     if (e.key === "Enter") setSelected(n.id);
                   }}
@@ -734,12 +776,12 @@ export default function App() {
                         <>
                           <IconButton
                             icon={RotateCcw}
-                            label="還原便箋"
+                            label={tr("還原便箋")}
                             onClick={() => void update({ ...n, deleted: null })}
                           />
                           <IconButton
                             icon={Trash2}
-                            label="永久刪除"
+                            label={tr("永久刪除")}
                             onClick={() => void purge(n)}
                           />
                         </>
@@ -747,24 +789,24 @@ export default function App() {
                         <>
                           <IconButton
                             icon={Pin}
-                            label={n.pinned ? "取消釘選" : "釘選便箋"}
+                            label={n.pinned ? tr("取消釘選") : tr("釘選便箋")}
                             active={n.pinned}
                             onClick={() => void update({ ...n, pinned: !n.pinned })}
                           />
                           <IconButton
                             icon={ArrowUpRight}
-                            label="在桌面開啟"
+                            label={tr("在桌面開啟")}
                             onClick={() => void popout(n)}
                           />
                         </>
                       )}
                     </div>
                   </div>
-                  <h2>{n.pinHash ? "私人便箋" : n.title || "未命名便箋"}</h2>
+                  <h2>{n.pinHash ? tr("私人便箋") : n.title || tr("未命名便箋")}</h2>
                   {n.pinHash ? (
                     <div className="locked-preview">
                       <LockKeyhole size={25} />
-                      <span>內容已鎖定</span>
+                      <span>{tr("內容已鎖定")}</span>
                     </div>
                   ) : (
                     <div
@@ -796,9 +838,10 @@ export default function App() {
                   <span>
                     <Plus size={25} />
                   </span>
-                  <b>新的想法，從這裡開始</b>
+                  <b>{tr("新的想法，從這裡開始")}</b>
                   <small>
-                    新增一張便箋 <kbd>Ctrl N</kbd>
+                    {tr("新增一張便箋")}
+                    <kbd>Ctrl N</kbd>
                   </small>
                 </button>
               )}
@@ -807,8 +850,10 @@ export default function App() {
           {ready && !filtered.length && (
             <div className="empty">
               <StickyNote size={35} />
-              <h3>{query ? "找不到相符的便箋" : "這裡還沒有便箋"}</h3>
-              <p>{query ? "試試其他關鍵字，或清除篩選條件。" : "寫下第一個想法吧。"}</p>
+              <h3>{query ? tr("找不到相符的便箋") : tr("這裡還沒有便箋")}</h3>
+              <p>
+                {query ? tr("試試其他關鍵字，或清除篩選條件\u3002") : tr("寫下第一個想法吧\u3002")}
+              </p>
               <button
                 className="secondary-button"
                 onClick={() => {
@@ -817,16 +862,16 @@ export default function App() {
                   setColorFilter(null);
                 }}
               >
-                清除篩選
+                {tr("清除篩選")}
               </button>
             </div>
           )}
           <div className="workspace-footer">
             <span>
               <span className="status-dot" />
-              所有想法，妥善留在這台裝置
+              {tr("所有想法，妥善留在這台裝置")}
             </span>
-            <span>留點空白，讓靈感發生。</span>
+            <span>{tr("留點空白，讓靈感發生\u3002")}</span>
           </div>
         </div>
       </main>
@@ -835,16 +880,16 @@ export default function App() {
       {current?.deleted && (
         <div className="modal-backdrop" onClick={() => setSelected(null)}>
           <section className="dialog" onClick={(e) => e.stopPropagation()}>
-            <h2>這張便箋在垃圾桶中</h2>
-            <p>還原後即可繼續編輯。</p>
+            <h2>{tr("這張便箋在垃圾桶中")}</h2>
+            <p>{tr("還原後即可繼續編輯\u3002")}</p>
             <button
               className="primary-button"
               onClick={() => void update({ ...current, deleted: null })}
             >
-              還原便箋
+              {tr("還原便箋")}
             </button>
             <button className="secondary-button" onClick={() => setSelected(null)}>
-              關閉
+              {tr("關閉")}
             </button>
           </section>
         </div>
@@ -855,29 +900,48 @@ export default function App() {
             <div className="dialog-header">
               <h2>
                 {modal === "settings"
-                  ? "設定與偏好"
+                  ? tr("設定與偏好")
                   : modal === "cloud"
-                    ? "讓便箋，走得更遠"
-                    : "鍵盤快捷鍵"}
+                    ? tr("讓便箋，走得更遠")
+                    : tr("鍵盤快捷鍵")}
               </h2>
-              <IconButton icon={X} label="關閉" onClick={() => setModal(null)} />
+              <IconButton icon={X} label={tr("關閉")} onClick={() => setModal(null)} />
             </div>
             {modal === "settings" ? (
               <>
                 <label className="setting-row">
-                  外觀主題{" "}
+                  {tr("介面語言")}
+                  <select
+                    aria-label={tr("介面語言")}
+                    value={i18n.resolvedLanguage || "en"}
+                    onChange={(event) => {
+                      void changeUiLanguage(event.target.value).catch((error) =>
+                        setToast(tr("無法切換語言：{{p0}}", { p0: String(error) }))
+                      );
+                    }}
+                  >
+                    {languages.map((language) => (
+                      <option key={language.value} value={language.value}>
+                        {language.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <p className="help">{tr("語言偏好會保存，並套用至所有便箋視窗。")}</p>
+                <label className="setting-row">
+                  {tr("外觀主題")}{" "}
                   <select value={theme} onChange={(e) => setTheme(e.target.value as Theme)}>
-                    <option value="system">跟隨系統</option>
-                    <option value="light">淺色模式</option>
-                    <option value="dark">深色模式</option>
+                    <option value="system">{tr("跟隨系統")}</option>
+                    <option value="light">{tr("淺色模式")}</option>
+                    <option value="dark">{tr("深色模式")}</option>
                   </select>
                 </label>
                 <div className="theme-options">
                   {(
                     [
-                      { id: "light", icon: Sun, label: "明亮" },
-                      { id: "dark", icon: Moon, label: "深色" },
-                      { id: "system", icon: Monitor, label: "系統" },
+                      { id: "light", icon: Sun, label: tr("明亮") },
+                      { id: "dark", icon: Moon, label: tr("深色") },
+                      { id: "system", icon: Monitor, label: tr("系統") },
                     ] as const
                   ).map(({ id, icon: Icon, label }) => (
                     <button
@@ -891,7 +955,7 @@ export default function App() {
                   ))}
                 </div>
                 <label className="setting-row">
-                  隱藏獨立便箋的系統標題列
+                  {tr("隱藏獨立便箋的系統標題列")}
                   <input
                     type="checkbox"
                     checked={framelessNotes}
@@ -900,11 +964,12 @@ export default function App() {
                   />
                 </label>
                 <p className="help">
-                  隱藏系統圖示、標題及最小化／最大化／關閉按鈕，立即套用至所有獨立便箋。拖曳便箋上方的模式名稱可移動視窗，右上角
-                  × 可關閉便箋。
+                  {tr(
+                    "隱藏系統圖示\u3001標題及最小化／最大化／關閉按鈕，立即套用至所有獨立便箋\u3002拖曳便箋上方的模式名稱可移動視窗，右上角 \u00D7 可關閉便箋\u3002"
+                  )}
                 </p>
                 <label className="setting-row">
-                  提醒音效
+                  {tr("提醒音效")}
                   <input
                     type="checkbox"
                     checked={sound}
@@ -915,46 +980,50 @@ export default function App() {
                   />
                 </label>
                 <div className="setting-row">
-                  自訂提醒鈴聲
-                  <input
-                    className="import-input"
-                    type="file"
-                    accept="audio/*"
-                    aria-label="選擇提醒鈴聲"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (!file) return;
-                      if (!file.type.startsWith("audio/") || file.size > 1024 * 1024) {
-                        setToast("請選擇 1 MB 以下的音訊檔");
-                        return;
-                      }
-                      const reader = new FileReader();
-                      reader.onload = () => {
-                        try {
-                          localStorage.setItem("sticky-ringtone", String(reader.result));
-                          setToast("已設定自訂鈴聲");
-                        } catch {
-                          setToast("鈴聲儲存空間不足，請選擇較小的檔案");
+                  {tr("自訂提醒鈴聲")}
+                  <FilePicker>
+                    <input
+                      className="import-input"
+                      type="file"
+                      accept="audio/*"
+                      aria-label={tr("選擇提醒鈴聲")}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        if (!file.type.startsWith("audio/") || file.size > 1024 * 1024) {
+                          setToast(tr("請選擇 1 MB 以下的音訊檔"));
+                          return;
                         }
-                      };
-                      reader.readAsDataURL(file);
-                    }}
-                  />
+                        const reader = new FileReader();
+                        reader.onload = () => {
+                          try {
+                            localStorage.setItem("sticky-ringtone", String(reader.result));
+                            setToast(tr("已設定自訂鈴聲"));
+                          } catch {
+                            setToast(tr("鈴聲儲存空間不足，請選擇較小的檔案"));
+                          }
+                        };
+                        reader.readAsDataURL(file);
+                      }}
+                    />
+                  </FilePicker>
                 </div>
                 <button
                   className="text-button"
                   onClick={() => {
                     localStorage.removeItem("sticky-ringtone");
-                    setToast("已恢復預設提示音");
+                    setToast(tr("已恢復預設提示音"));
                   }}
                 >
-                  恢復預設提示音
+                  {tr("恢復預設提示音")}
                 </button>
                 <p className="help">
-                  提醒需要應用程式持續執行；關閉主視窗會保留在系統匣。休眠期間的提醒會在恢復後顯示。
+                  {tr(
+                    "提醒需要應用程式持續執行；關閉主視窗會保留在系統匣\u3002休眠期間的提醒會在恢復後顯示\u3002"
+                  )}
                 </p>
                 <div className="setting-row">
-                  資料備份
+                  {tr("資料備份")}
                   <button
                     className="secondary-button"
                     onClick={() => {
@@ -963,58 +1032,62 @@ export default function App() {
                         JSON.stringify(notes, null, 2),
                         "application/json"
                       );
-                      setToast("已匯出備份，包含私人便箋的明文內容");
+                      setToast(tr("已匯出備份，包含私人便箋的明文內容"));
                     }}
                   >
                     <Download size={15} />
-                    匯出全部 JSON
+                    {tr("匯出全部 JSON")}
                   </button>
                 </div>
                 <p className="help">
-                  防窺鎖僅遮蔽畫面，不會加密本機檔案。備份含所有便箋內容，請妥善保存。
+                  {tr(
+                    "防窺鎖僅遮蔽畫面，不會加密本機檔案\u3002備份含所有便箋內容，請妥善保存\u3002"
+                  )}
                 </p>
                 <div className="setting-row">
-                  還原備份
-                  <input
-                    className="import-input"
-                    type="file"
-                    accept=".json"
-                    onChange={async (e) => {
-                      const f = e.target.files?.[0];
-                      if (!f) return;
-                      try {
-                        const input = JSON.parse(await f.text());
-                        if (
-                          !Array.isArray(input) ||
-                          !input.every(
-                            (n) =>
-                              typeof n.id === "string" &&
-                              /^[a-f0-9-]{36}$/i.test(n.id) &&
-                              typeof n.html === "string" &&
-                              typeof n.title === "string" &&
-                              Array.isArray(n.tags)
+                  {tr("還原備份")}
+                  <FilePicker>
+                    <input
+                      className="import-input"
+                      type="file"
+                      accept=".json"
+                      onChange={async (e) => {
+                        const f = e.target.files?.[0];
+                        if (!f) return;
+                        try {
+                          const input = JSON.parse(await f.text());
+                          if (
+                            !Array.isArray(input) ||
+                            !input.every(
+                              (n) =>
+                                typeof n.id === "string" &&
+                                /^[a-f0-9-]{36}$/i.test(n.id) &&
+                                typeof n.html === "string" &&
+                                typeof n.title === "string" &&
+                                Array.isArray(n.tags)
+                            )
                           )
-                        )
-                          throw new Error("備份格式不正確");
-                        for (const item of input) {
-                          const base = createNote();
-                          await saveNote({
-                            ...base,
-                            ...item,
-                            id: base.id,
-                            html: sanitize(item.html),
-                            color: Math.max(0, Math.min(7, Number(item.color) || 0)),
-                            tags: item.tags.filter((t: unknown) => typeof t === "string"),
-                          });
+                            throw new Error(tr("備份格式不正確"));
+                          for (const item of input) {
+                            const base = createNote();
+                            await saveNote({
+                              ...base,
+                              ...item,
+                              id: base.id,
+                              html: sanitize(item.html),
+                              color: Math.max(0, Math.min(7, Number(item.color) || 0)),
+                              tags: item.tags.filter((t: unknown) => typeof t === "string"),
+                            });
+                          }
+                          await refresh();
+                          setToast(tr("備份已匯入為新便箋"));
+                        } catch (e) {
+                          report(e);
                         }
-                        await refresh();
-                        setToast("備份已匯入為新便箋");
-                      } catch (e) {
-                        report(e);
-                      }
-                      e.target.value = "";
-                    }}
-                  />
+                        e.target.value = "";
+                      }}
+                    />
+                  </FilePicker>
                 </div>
               </>
             ) : modal === "cloud" ? (
@@ -1022,32 +1095,33 @@ export default function App() {
                 <div className="cloud-hero">
                   <Cloud size={42} />
                 </div>
-                <p>目前版本採本機優先，無需帳戶即可使用。</p>
+                <p>{tr("目前版本採本機優先，無需帳戶即可使用\u3002")}</p>
                 <p>
-                  Google Drive、OneDrive 雙向同步與手機 Widget
-                  規畫於後續版本，尚未連接任何雲端服務。
+                  {tr(
+                    "Google Drive\u3001OneDrive 雙向同步與手機 Widget 規畫於後續版本，尚未連接任何雲端服務\u3002"
+                  )}
                 </p>
                 <div className="cloud-detail">
                   <Check size={17} />
-                  本機自動儲存與 JSON 備份已可使用
+                  {tr("本機自動儲存與 JSON 備份已可使用")}
                 </div>
                 <button className="primary-button" onClick={() => setModal("settings")}>
-                  先備份我的便箋
+                  {tr("先備份我的便箋")}
                 </button>
               </>
             ) : (
               <div className="shortcut-list">
                 {[
-                  ["新增便箋", "Ctrl / ⌘ + N"],
-                  ["刪除目前便箋", "Ctrl / ⌘ + D"],
-                  ["回到總清單", "Ctrl / ⌘ + H"],
-                  ["搜尋便箋", "Ctrl / ⌘ + F"],
-                  ["粗體 / 斜體 / 底線", "Ctrl / ⌘ + B / I / U"],
-                  ["刪除線", "Ctrl / ⌘ + T"],
-                  ["項目清單", "Ctrl / ⌘ + Shift + L"],
-                  ["放大 / 縮小字級", "Ctrl / ⌘ + Shift + > / <"],
-                  ["全域新增（桌面版）", "Ctrl / ⌘ + Alt + N"],
-                  ["全域喚醒（桌面版）", "Ctrl / ⌘ + Alt + H"],
+                  [tr("新增便箋"), "Ctrl / ⌘ + N"],
+                  [tr("刪除目前便箋"), "Ctrl / ⌘ + D"],
+                  [tr("回到總清單"), "Ctrl / ⌘ + H"],
+                  [tr("搜尋便箋"), "Ctrl / ⌘ + F"],
+                  [tr("粗體 / 斜體 / 底線"), "Ctrl / ⌘ + B / I / U"],
+                  [tr("刪除線"), "Ctrl / ⌘ + T"],
+                  [tr("項目清單"), "Ctrl / ⌘ + Shift + L"],
+                  [tr("放大 / 縮小字級"), "Ctrl / ⌘ + Shift + > / <"],
+                  [tr("全域新增（桌面版）"), "Ctrl / ⌘ + Alt + N"],
+                  [tr("全域喚醒（桌面版）"), "Ctrl / ⌘ + Alt + H"],
                 ].map(([a, b]) => (
                   <div key={a}>
                     <span>{a}</span>
@@ -1063,9 +1137,9 @@ export default function App() {
         <div className="modal-backdrop reminder-overlay">
           <section className="dialog reminder-dialog">
             <Bell size={35} />
-            <h2>到了提醒的時間</h2>
-            <h3>{alertNote.pinHash ? "私人便箋" : alertNote.title || "未命名便箋"}</h3>
-            <p>{new Date(alertNote.reminder).toLocaleString("zh-TW")}</p>
+            <h2>{tr("到了提醒的時間")}</h2>
+            <h3>{alertNote.pinHash ? tr("私人便箋") : alertNote.title || tr("未命名便箋")}</h3>
+            <p>{new Date(alertNote.reminder).toLocaleString(dateLocale())}</p>
             <button
               className="primary-button"
               onClick={() => {
@@ -1073,7 +1147,7 @@ export default function App() {
                 closeAlert();
               }}
             >
-              開啟便箋
+              {tr("開啟便箋")}
             </button>
             <button
               className="secondary-button"
@@ -1086,10 +1160,10 @@ export default function App() {
                 closeAlert();
               }}
             >
-              10 分鐘後提醒
+              {tr("10 分鐘後提醒")}
             </button>
             <button className="text-button" onClick={closeAlert}>
-              關閉提醒
+              {tr("關閉提醒")}
             </button>
           </section>
         </div>
@@ -1103,7 +1177,6 @@ export default function App() {
     </div>
   );
 }
-
 function Editor({
   note,
   dark,
@@ -1121,6 +1194,7 @@ function Editor({
   onPopout: () => void;
   notify: (s: string) => void;
 }) {
+  useTranslation("sticky");
   const [draft, setDraft] = useState(note);
   const [editing, setEditing] = useState(!detachedId);
   const draftRef = useRef(note);
@@ -1144,7 +1218,7 @@ function Editor({
           Math.round(drag.origin.y + (drag.y - drag.startY) * drag.scale)
         )
       )
-      .catch((error) => notify(`無法移動便箋：${String(error)}`));
+      .catch((error) => notify(tr("無法移動便箋：{{p0}}", { p0: String(error) })));
   }
   const [saved, setSaved] = useState(true);
   const [saveError, setSaveError] = useState("");
@@ -1269,32 +1343,34 @@ function Editor({
   const addImage = (file: File) => {
     if (!file.type.startsWith("image/")) return;
     if (file.size > 8 * 1024 * 1024) {
-      notify("圖片需小於 8 MB");
+      notify(tr("圖片需小於 8 MB"));
       return;
     }
     const reader = new FileReader();
     reader.onload = () =>
       command(
         "insertHTML",
-        `<img src="${reader.result}" alt="貼上的圖片" style="width:100%"><p><br></p>`
+        tr('<img src="{{p0}}" alt="貼上的圖片" style="width:100%"><p><br></p>', {
+          p0: reader.result,
+        })
       );
     reader.readAsDataURL(file);
   };
   const links = Array.from(
     new Set(
       plain(draft.html).match(
-        /(?:https?:\/\/[^\s<>]+|[\w.+-]+@[\w.-]+\.[A-Za-z]{2,}|\d{4}[-/]\d{1,2}[-/]\d{1,2}(?:\s+\d{1,2}:\d{2})?|[\u4e00-\u9fff]{2,3}[市縣][\u4e00-\u9fff\d]+(?:路|街)[\u4e00-\u9fff\d巷弄段-]*號|(?:\+?\d[\d ()-]{7,}\d))/g
+        /(?:https?:\/\/[^\s<>]+|[\w.+-]+@[\w.-]+\.[A-Za-z]{2,}|\d{4}[-/]\d{1,2}[-/]\d{1,2}(?:\s+\d{1,2}:\d{2})?|[一-鿿]{2,3}[市縣][一-鿿\d]+(?:路|街)[一-鿿\d巷弄段-]*號|(?:\+?\d[\d ()-]{7,}\d))/g
       ) || []
     )
   ).slice(0, 8);
   async function pinAction() {
     if (!/^\d{4}$/.test(pin)) {
-      setPinError("請輸入 4 位數 PIN 碼");
+      setPinError(tr("請輸入 4 位數 PIN 碼"));
       return;
     }
     if (!unlocked) {
       if ((await hashPin(pin, draft.salt)) !== draft.pinHash) {
-        setPinError("PIN 碼不正確");
+        setPinError(tr("PIN 碼不正確"));
         return;
       }
       setUnlocked(true);
@@ -1307,7 +1383,7 @@ function Editor({
     setPin("");
     setPanel(null);
     setUnlocked(false);
-    notify("已設定防窺鎖");
+    notify(tr("已設定防窺鎖"));
   }
   const paper = dark ? colors[draft.color].dark : colors[draft.color].value;
   async function togglePin() {
@@ -1316,7 +1392,7 @@ function Editor({
       if (desktop && detachedId) await getCurrentWindow().setAlwaysOnTop(pinned);
       change({ pinned });
     } catch (error) {
-      notify(`無法變更置頂狀態：${String(error)}`);
+      notify(tr("無法變更置頂狀態：{{p0}}", { p0: String(error) }));
     }
   }
   function finishEditing() {
@@ -1336,7 +1412,7 @@ function Editor({
     >
       <div
         className="editor-header"
-        title={detachedId ? "拖曳此處移動便箋" : undefined}
+        title={detachedId ? tr("拖曳此處移動便箋") : undefined}
         onPointerDown={(event) => {
           if (
             !detachedId ||
@@ -1363,7 +1439,7 @@ function Editor({
               drag.scale = scale;
               moveNoteWindow(drag);
             })
-            .catch((error) => notify(`無法移動便箋：${String(error)}`));
+            .catch((error) => notify(tr("無法移動便箋：{{p0}}", { p0: String(error) })));
         }}
         onPointerMove={(event) => {
           const drag = windowDrag.current;
@@ -1387,7 +1463,7 @@ function Editor({
       >
         <span>
           <StickyNote size={16} />
-          {detachedId ? (editing ? "編輯模式" : "閱讀模式") : "編輯便箋"}
+          {detachedId ? (editing ? tr("編輯模式") : tr("閱讀模式")) : tr("編輯便箋")}
         </span>
         <div>
           {detachedId && unlocked && (
@@ -1396,31 +1472,33 @@ function Editor({
               onClick={() => (editing ? finishEditing() : setEditing(true))}
             >
               {editing ? <Eye size={14} /> : <Pencil size={14} />}
-              {editing ? "完成" : "編輯"}
+              {editing ? tr("完成") : tr("編輯")}
             </button>
           )}
           {detachedId ? (
             <button
               className={`note-pin-button ${draft.pinned ? "is-pinned" : ""}`}
               aria-pressed={draft.pinned}
-              title="讓便箋顯示在其他視窗上方"
+              title={tr("讓便箋顯示在其他視窗上方")}
               onClick={() => void togglePin()}
             >
               <Pin size={14} />
-              {draft.pinned ? "取消置頂" : "置頂"}
+              {draft.pinned ? tr("取消置頂") : tr("置頂")}
             </button>
           ) : (
             <IconButton
               icon={Pin}
-              label={draft.pinned ? "取消置頂" : "置頂"}
+              label={draft.pinned ? tr("取消置頂") : tr("置頂")}
               active={draft.pinned}
               onClick={() => void togglePin()}
             />
           )}
-          {!detachedId && <IconButton icon={ArrowUpRight} label="在桌面開啟" onClick={onPopout} />}
+          {!detachedId && (
+            <IconButton icon={ArrowUpRight} label={tr("在桌面開啟")} onClick={onPopout} />
+          )}
           <IconButton
             icon={X}
-            label="關閉便箋"
+            label={tr("關閉便箋")}
             onClick={() => {
               if (detachedId) finishEditing();
               if (draftRef.current.pinHash) setUnlocked(false);
@@ -1438,13 +1516,13 @@ function Editor({
             <div />
           </div>
           <LockKeyhole size={36} />
-          <h2>留給自己的小秘密</h2>
-          <p>輸入 4 位數 PIN 碼，開啟這張便箋。</p>
+          <h2>{tr("留給自己的小秘密")}</h2>
+          <p>{tr("輸入 4 位數 PIN 碼，開啟這張便箋\u3002")}</p>
           <input
             type="password"
             inputMode="numeric"
             maxLength={4}
-            aria-label="解鎖 PIN 碼"
+            aria-label={tr("解鎖 PIN 碼")}
             value={pin}
             onChange={(e) => setPin(e.target.value.replace(/\D/g, ""))}
             onKeyDown={(e) => {
@@ -1454,14 +1532,14 @@ function Editor({
           />
           {pinError && <p className="inline-error">{pinError}</p>}
           <button className="primary-button" onClick={() => void pinAction()}>
-            解鎖便箋
+            {tr("解鎖便箋")}
           </button>
-          <small>防窺鎖僅遮蔽畫面，不加密本機資料。</small>
+          <small>{tr("防窺鎖僅遮蔽畫面，不加密本機資料\u3002")}</small>
         </div>
       ) : !editing ? (
         <Fragment key="view">
           <div className="note-view-title">
-            <h1>{draft.title || "未命名便箋"}</h1>
+            <h1>{draft.title || tr("未命名便箋")}</h1>
           </div>
           <div
             className="rich-editor note-view-content"
@@ -1481,7 +1559,7 @@ function Editor({
             }}
           />
           {!plain(draft.html) && !draft.html.includes("<img") && (
-            <p className="note-view-empty">按右上角「編輯」，寫下你的想法。</p>
+            <p className="note-view-empty">{tr("按右上角\u300C編輯\u300D，寫下你的想法\u3002")}</p>
           )}
           <div className="note-view-footer">
             <div>
@@ -1491,17 +1569,19 @@ function Editor({
                 </span>
               ))}
             </div>
-            <span>{saveError ? "儲存失敗" : saved ? "已自動儲存" : "儲存中…"}</span>
+            <span>
+              {saveError ? tr("儲存失敗") : saved ? tr("已自動儲存") : tr("儲存中\u2026")}
+            </span>
           </div>
         </Fragment>
       ) : (
         <Fragment key="edit">
           <div className="editor-title">
             <input
-              placeholder="未命名便箋"
+              placeholder={tr("未命名便箋")}
               value={draft.title}
               onChange={(e) => change({ title: e.target.value })}
-              aria-label="便箋標題"
+              aria-label={tr("便箋標題")}
             />
           </div>
           <div
@@ -1511,10 +1591,10 @@ function Editor({
             }}
           >
             {[
-              { icon: Bold, label: "粗體 Ctrl+B", cmd: "bold" },
-              { icon: Italic, label: "斜體 Ctrl+I", cmd: "italic" },
-              { icon: Underline, label: "底線 Ctrl+U", cmd: "underline" },
-              { icon: Strikethrough, label: "刪除線 Ctrl+T", cmd: "strikeThrough" },
+              { icon: Bold, label: tr("粗體 Ctrl+B"), cmd: "bold" },
+              { icon: Italic, label: tr("斜體 Ctrl+I"), cmd: "italic" },
+              { icon: Underline, label: tr("底線 Ctrl+U"), cmd: "underline" },
+              { icon: Strikethrough, label: tr("刪除線 Ctrl+T"), cmd: "strikeThrough" },
             ].map((t) => (
               <IconButton
                 key={t.cmd}
@@ -1526,22 +1606,24 @@ function Editor({
             <span className="toolbar-divider" />
             <IconButton
               icon={ListTodo}
-              label="待辦清單"
-              onClick={() => command("insertHTML", '<div><input type="checkbox"> 待辦事項</div>')}
+              label={tr("待辦清單")}
+              onClick={() =>
+                command("insertHTML", tr('<div><input type="checkbox"> 待辦事項</div>'))
+              }
             />
             <IconButton
               icon={ListIcon}
-              label="項目清單"
+              label={tr("項目清單")}
               onClick={() => command("insertUnorderedList")}
             />
             <IconButton
               icon={ListOrdered}
-              label="編號清單"
+              label={tr("編號清單")}
               onClick={() => command("insertOrderedList")}
             />
             <IconButton
               icon={ImagePlus}
-              label="插入圖片"
+              label={tr("插入圖片")}
               onClick={() => fileRef.current?.click()}
             />
             <span className="toolbar-divider" />
@@ -1550,12 +1632,12 @@ function Editor({
               <button
                 key={c}
                 className={`highlight-dot highlight-${c}`}
-                title={`${c} 色塊標注`}
-                aria-label={`${c} 色塊標注`}
+                title={tr("{{p0}} 色塊標注", { p0: tr(c) })}
+                aria-label={tr("{{p0}} 色塊標注", { p0: tr(c) })}
                 onClick={() =>
                   command(
                     "insertHTML",
-                    `<span class="highlight-${c}">${escapeHTML(window.getSelection()?.toString() || "標注文字")}</span>`
+                    `<span class="highlight-${c}">${escapeHTML(window.getSelection()?.toString() || tr("標注文字"))}</span>`
                   )
                 }
               />
@@ -1563,14 +1645,14 @@ function Editor({
             <button
               className="font-button"
               onClick={() => change({ fontSize: Math.max(12, draft.fontSize - 2) })}
-              aria-label="縮小字級"
+              aria-label={tr("縮小字級")}
             >
               A−
             </button>
             <button
               className="font-button"
               onClick={() => change({ fontSize: Math.min(36, draft.fontSize + 2) })}
-              aria-label="放大字級"
+              aria-label={tr("放大字級")}
             >
               A+
             </button>
@@ -1591,9 +1673,9 @@ function Editor({
             className="rich-editor"
             contentEditable
             suppressContentEditableWarning
-            data-placeholder="寫下此刻的想法…"
+            data-placeholder={tr("寫下此刻的想法\u2026")}
             role="textbox"
-            aria-label="便箋內容"
+            aria-label={tr("便箋內容")}
             aria-multiline="true"
             style={{ fontSize: draft.fontSize }}
             onInput={input}
@@ -1650,14 +1732,14 @@ function Editor({
           />
           {selectedImage && (
             <div className="image-tools">
-              <span>圖片</span>
+              <span>{tr("圖片")}</span>
               <button
                 onClick={() => {
                   selectedImage.style.width = `${Math.max(20, (parseInt(selectedImage.style.width) || 100) - 10)}%`;
                   input();
                 }}
               >
-                縮小
+                {tr("縮小")}
               </button>
               <button
                 onClick={() => {
@@ -1665,7 +1747,7 @@ function Editor({
                   input();
                 }}
               >
-                放大
+                {tr("放大")}
               </button>
               <button
                 onClick={() => {
@@ -1675,7 +1757,7 @@ function Editor({
                   a.click();
                 }}
               >
-                另存
+                {tr("另存")}
               </button>
               <button
                 onClick={() => {
@@ -1684,13 +1766,13 @@ function Editor({
                   input();
                 }}
               >
-                刪除
+                {tr("刪除")}
               </button>
             </div>
           )}
           {links.length > 0 && (
             <div className="detected-links">
-              <small>偵測到的連結</small>
+              <small>{tr("偵測到的連結")}</small>
               {links.map((s) => (
                 <button
                   key={s}
@@ -1726,8 +1808,8 @@ function Editor({
             <label>
               <Tag size={14} />
               <input
-                aria-label="標籤，以逗號分隔"
-                placeholder="加入標籤，以逗號分隔"
+                aria-label={tr("標籤，以逗號分隔")}
+                placeholder={tr("加入標籤，以逗號分隔")}
                 value={tagText}
                 onChange={(e) => {
                   setTagText(e.target.value);
@@ -1749,7 +1831,7 @@ function Editor({
                 <button
                   key={c.name}
                   style={{ background: c.value }}
-                  aria-label={`改為${c.name}`}
+                  aria-label={tr("改為{{p0}}", { p0: c.name })}
                   title={c.name}
                   className={draft.color === i ? "chosen" : ""}
                   onClick={() => change({ color: i })}
@@ -1761,36 +1843,36 @@ function Editor({
           </div>
           <div className="editor-bottom">
             <span className={saveError ? "save-error" : "save-status"}>
-              {saveError ? "儲存失敗" : saved ? "已自動儲存" : "儲存中…"}
+              {saveError ? tr("儲存失敗") : saved ? tr("已自動儲存") : tr("儲存中\u2026")}
             </span>
             <div>
               <IconButton
                 icon={Bell}
-                label="設定提醒"
+                label={tr("設定提醒")}
                 active={!!draft.reminder && !draft.fired}
                 onClick={() => setPanel(panel === "reminder" ? null : "reminder")}
               />
               <IconButton
                 icon={LockKeyhole}
-                label="防窺鎖"
+                label={tr("防窺鎖")}
                 active={!!draft.pinHash}
                 onClick={() => setPanel(panel === "lock" ? null : "lock")}
               />
               <IconButton
                 icon={Archive}
-                label={draft.archived ? "取消封存" : "封存便箋"}
+                label={draft.archived ? tr("取消封存") : tr("封存便箋")}
                 onClick={() => {
                   change({ archived: !draft.archived });
-                  notify(draft.archived ? "便箋已取消封存" : "便箋已封存");
+                  notify(draft.archived ? tr("便箋已取消封存") : tr("便箋已封存"));
                   onClose();
                 }}
               />
               <IconButton
                 icon={Download}
-                label="匯出便箋"
+                label={tr("匯出便箋")}
                 onClick={() => setPanel(panel === "export" ? null : "export")}
               />
-              <IconButton icon={Trash2} label="刪除便箋" onClick={requestDelete} />
+              <IconButton icon={Trash2} label={tr("刪除便箋")} onClick={requestDelete} />
             </div>
           </div>
           {panel && (
@@ -1798,12 +1880,12 @@ function Editor({
               <div className="dialog-header">
                 <b>
                   {panel === "reminder"
-                    ? "在什麼時候提醒？"
+                    ? tr("在什麼時候提醒？")
                     : panel === "lock"
-                      ? "便箋防窺鎖"
-                      : "匯出這張便箋"}
+                      ? tr("便箋防窺鎖")
+                      : tr("匯出這張便箋")}
                 </b>
-                <IconButton icon={X} label="關閉選單" onClick={() => setPanel(null)} />
+                <IconButton icon={X} label={tr("關閉選單")} onClick={() => setPanel(null)} />
               </div>
               {panel === "reminder" ? (
                 <>
@@ -1820,7 +1902,8 @@ function Editor({
                           setReminder(localDateTime(new Date(Date.now() + m * 60000).toISOString()))
                         }
                       >
-                        {m} 分鐘後
+                        {m}
+                        {tr("分鐘後")}
                       </button>
                     ))}
                   </div>
@@ -1828,15 +1911,15 @@ function Editor({
                     className="primary-button"
                     onClick={() => {
                       if (!reminder || new Date(reminder).getTime() <= Date.now()) {
-                        notify("請選擇未來的提醒時間");
+                        notify(tr("請選擇未來的提醒時間"));
                         return;
                       }
                       change({ reminder: new Date(reminder).toISOString(), fired: false });
                       setPanel(null);
-                      notify("已設定提醒，請保持應用程式執行");
+                      notify(tr("已設定提醒，請保持應用程式執行"));
                     }}
                   >
-                    設定提醒
+                    {tr("設定提醒")}
                   </button>
                   {draft.reminder && (
                     <button
@@ -1847,24 +1930,24 @@ function Editor({
                         setPanel(null);
                       }}
                     >
-                      移除提醒
+                      {tr("移除提醒")}
                     </button>
                   )}
                 </>
               ) : panel === "lock" ? (
                 <>
-                  <p>設定 4 位數 PIN 碼，遮蔽便箋內容。</p>
+                  <p>{tr("設定 4 位數 PIN 碼，遮蔽便箋內容\u3002")}</p>
                   <input
                     type="password"
                     inputMode="numeric"
                     maxLength={4}
                     value={pin}
-                    aria-label="設定 PIN 碼"
+                    aria-label={tr("設定 PIN 碼")}
                     onChange={(e) => setPin(e.target.value.replace(/\D/g, ""))}
                   />
                   {pinError && <p className="inline-error">{pinError}</p>}
                   <button className="primary-button" onClick={() => void pinAction()}>
-                    設定並鎖定
+                    {tr("設定並鎖定")}
                   </button>
                   {draft.pinHash && (
                     <button
@@ -1874,16 +1957,16 @@ function Editor({
                         setPanel(null);
                       }}
                     >
-                      移除防窺鎖
+                      {tr("移除防窺鎖")}
                     </button>
                   )}
-                  <small>防窺鎖不加密本機資料；忘記 PIN 無法從畫面解鎖。</small>
+                  <small>{tr("防窺鎖不加密本機資料；忘記 PIN 無法從畫面解鎖\u3002")}</small>
                 </>
               ) : (
                 <div className="export-options">
                   <button
                     onClick={() =>
-                      download(`${draft.title || "便箋"}.md`, markdown(draft), "text/markdown")
+                      download(`${draft.title || tr("便箋")}.md`, markdown(draft), "text/markdown")
                     }
                   >
                     Markdown <Download size={15} />
@@ -1891,7 +1974,7 @@ function Editor({
                   <button
                     onClick={() =>
                       download(
-                        `${draft.title || "便箋"}.json`,
+                        `${draft.title || tr("便箋")}.json`,
                         JSON.stringify(draft, null, 2),
                         "application/json"
                       )
@@ -1907,9 +1990,10 @@ function Editor({
                       window.print();
                     }}
                   >
-                    列印 / 另存 PDF <Download size={15} />
+                    {tr("列印 / 另存 PDF")}
+                    <Download size={15} />
                   </button>
-                  <small>PDF 使用系統列印功能，選擇「另存為 PDF」。</small>
+                  <small>{tr("PDF 使用系統列印功能，選擇\u300C另存為 PDF\u300D\u3002")}</small>
                 </div>
               )}
             </div>

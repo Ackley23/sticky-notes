@@ -15,7 +15,8 @@
     "format:check": "prettier --check \"src/**/*.{ts,tsx,css,json}\"",
     "lint": "eslint src/**/*.{ts,tsx} vite.config.ts",
     "lint:fix": "eslint src/**/*.{ts,tsx} vite.config.ts --fix",
-    "check": "pnpm format:check && pnpm lint && pnpm build"
+    "check": "pnpm format:check && pnpm lint && pnpm i18n:check && pnpm build",
+    "i18n:check": "node scripts/check-locales.mjs"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.3",
