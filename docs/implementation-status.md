@@ -80,3 +80,10 @@ Windows 獨立便箋已重新實測：內容與富文字工具列正常顯示，
 - 翻譯檢查：3 套語系、222 個一致鍵值、217 個靜態使用鍵值，插值與區域語言映射通過。pnpm i18n:check 已整合至 pnpm check。
 - 瀏覽器實測三語切換、重新載入保存與已開啟便箋即時同步。Windows 原生實測主視窗切換英文後，無標題列獨立便箋同步顯示 View mode / Edit / Always on top / Saved；原有內容保持原文。
 - TypeScript、ESLint、Prettier、Vite 與 Windows debug 建置通過。截圖：screenshots/settings-language-en.jpg、screenshots/desktop-note-en.png。
+
+### 獨立便箋閱讀模式工具列（2026-10-19）
+
+- 閱讀模式下，滑鼠未停留且原生視窗未取得焦點時隱藏 editor-header；滑鼠移入或視窗取得焦點即顯示。編輯模式維持顯示。
+- 隱藏時保留工具列高度，避免內容跳動；隱藏控制項不接受點擊或鍵盤焦點。主畫面編輯器不受影響。
+- 原生焦點監聽包含初始狀態讀取、非同步競態保護與卸載清理。
+- TypeScript、ESLint、Prettier、三語系檢查與 Vite 建置通過；瀏覽器確認閱讀／編輯模式切換正常。原生視窗失焦與滑鼠移入仍需實機確認。

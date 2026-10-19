@@ -1197,6 +1197,40 @@ function Editor({
   useTranslation("sticky");
   const [draft, setDraft] = useState(note);
   const [editing, setEditing] = useState(!detachedId);
+  const [windowFocused, setWindowFocused] = useState(() => !desktop && document.hasFocus());
+  useEffect(() => {
+    if (!detachedId) return;
+    let disposed = false;
+    let stop: (() => void) | undefined;
+    let focusRevision = 0;
+    const focus = () => setWindowFocused(true);
+    const blur = () => setWindowFocused(false);
+    if (desktop) {
+      const noteWindow = getCurrentWindow();
+      void noteWindow
+        .onFocusChanged(({ payload }) => {
+          focusRevision++;
+          if (!disposed) setWindowFocused(payload);
+        })
+        .then(async (unlisten) => {
+          if (disposed) return unlisten();
+          stop = unlisten;
+          const revision = focusRevision;
+          const focused = await noteWindow.isFocused();
+          if (!disposed && revision === focusRevision) setWindowFocused(focused);
+        })
+        .catch((error) => console.error("Failed to observe note window focus", error));
+    } else {
+      window.addEventListener("focus", focus);
+      window.addEventListener("blur", blur);
+    }
+    return () => {
+      disposed = true;
+      stop?.();
+      window.removeEventListener("focus", focus);
+      window.removeEventListener("blur", blur);
+    };
+  }, []);
   const draftRef = useRef(note);
   const editor = useRef<HTMLDivElement>(null);
   type WindowDrag = {
@@ -1407,7 +1441,11 @@ function Editor({
   }
   return (
     <section
-      className="note-editor"
+      className={[
+        "note-editor",
+        detachedId && !editing ? "note-view-autohide" : "",
+        windowFocused ? "window-focused" : "",
+      ].join(" ")}
       style={{ "--paper": paper, "--paper-ink": textColor(paper) } as React.CSSProperties}
     >
       <div

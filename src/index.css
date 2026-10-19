@@ -1718,6 +1718,11 @@ h1 > span {
 .detached .editor-header > div {
   gap: 3px;
 }
+.detached .note-view-autohide:not(.window-focused):not(:hover) > .editor-header {
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
 .detached .editor-header {
   cursor: move;
   user-select: none;
