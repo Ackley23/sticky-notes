@@ -12,6 +12,12 @@
 - 安裝包尚未簽章；應用內自動更新未配置。macOS／Linux 尚未納入這次自動打包。
 - GitHub 遠端流程尚待首次推送後驗證。
 
+### Windows CI 換行修正
+
+- 首次 GitHub 執行在 `pnpm check` 的 Prettier 階段失敗：Windows 自動轉為 CRLF，造成 33 個檔案格式檢查不通過。
+- 新增 `.gitattributes`，文字檔統一以 LF checkout，並更新 checkout／setup-node／pnpm setup 至使用 Node.js 24 的官方 Action 版本。
+- 使用 `core.autocrlf=true` 的乾淨 checkout 重現原本 33 項錯誤；套用屬性後重新輸出檔案，Prettier 通過。本機 `pnpm check` 與 5 項發版腳本測試通過；遠端修正仍需推送後驗證。
+
 ## PRD 對照
 
 | 層級 | 模組 | 狀態與邊界 |
