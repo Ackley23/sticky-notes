@@ -1,0 +1,151 @@
+{
+  "app": {
+    "title": "Tauri 應用模板",
+    "welcome": "歡迎使用 Tauri + React",
+    "description": "基於 Tauri v2、React 19 和 shadcn/ui 的現代桌面應用模板"
+  },
+  "greet": {
+    "title": "來自 Rust 的問候",
+    "description": "測試前端與 Tauri 後端的通訊",
+    "placeholder": "輸入你的名字...",
+    "button": "問候"
+  },
+  "about": {
+    "title": "關於",
+    "button": "關於",
+    "appName": "Tauri 應用模板",
+    "version": "版本",
+    "description": "基於 Tauri v2、React 19 和 shadcn/ui 構建的現代桌面應用模板。",
+    "features": "特性",
+    "feature1": "Tauri v2 - 輕量級桌面應用框架",
+    "feature2": "React 19 - 最新的 React 版本",
+    "feature3": "TypeScript - 型別安全",
+    "feature4": "Tailwind CSS v4 - 現代 CSS 框架",
+    "feature5": "shadcn/ui - 精美的 UI 元件",
+    "close": "關閉"
+  },
+  "theme": {
+    "toggle": "切換主題"
+  },
+  "language": {
+    "toggle": "切換語言",
+    "en": "English",
+    "zh": "繁體中文",
+    "zhHant": "繁體中文",
+    "zhHans": "简体中文"
+  },
+  "tray": {
+    "show": "顯示視窗",
+    "quit": "退出"
+  },
+  "updater": {
+    "checkForUpdates": "檢查更新",
+    "checking": "檢查中...",
+    "checkFailed": "檢查更新失敗。",
+    "upToDate": "您正在使用最新版本！",
+    "updateAvailable": "發現新版本",
+    "downloading": "正在下載更新",
+    "installingVersion": "正在安裝版本 {{version}}...",
+    "versionAvailable": "版本 {{version}} 可用。",
+    "releaseNotes": "更新說明：",
+    "later": "稍後",
+    "installNow": "立即安裝"
+  },
+  "closeDialog": {
+    "title": "關閉視窗",
+    "description": "請選擇關閉主視窗時的操作：",
+    "minimizeTitle": "縮小至系統匣，繼續背景執行",
+    "minimizeDesc": "程式將繼續在後台運行，可透過系統匣圖示重新開啟",
+    "minimizeTitleMac": "縮小至選單列，繼續背景執行",
+    "minimizeDescMac": "程式將繼續在後台運行，可透過選單列圖示重新開啟",
+    "exitTitle": "完全結束應用程式",
+    "exitDesc": "結束所有進程並完全退出應用程式",
+    "rememberChoice": "記住我的選擇",
+    "rememberHint": "可在設定中隨時更改此選項",
+    "confirm": "確定",
+    "cancel": "取消"
+  },
+  "settings": {
+    "title": "設定",
+    "button": "設定",
+    "close": "關閉",
+    "general": {
+      "title": "通用",
+      "description": "管理應用程式的基礎運行行為",
+      "closeAction": "關閉主視窗時",
+      "closeActionDesc": "選擇點擊主視窗關閉按鈕時的預設操作",
+      "ask": "每次詢問",
+      "minimize": "最小化到托盤",
+      "exit": "退出程序",
+      "setSuccess": "已更新關閉視窗設定！"
+    },
+    "appearance": {
+      "title": "外觀",
+      "description": "自定義應用的外觀和語言",
+      "theme": "主題",
+      "light": "淺色",
+      "dark": "深色",
+      "system": "跟隨系統",
+      "language": "語言"
+    },
+    "shortcut": {
+      "title": "快捷鍵",
+      "description": "設定全域性快捷鍵",
+      "placeholder": "按下組合鍵設定",
+      "showMain": "顯示主視窗",
+      "showMainDesc": "使用快捷鍵快速顯示主視窗",
+      "setSuccess": "已將快捷鍵設為 {{shortcut}}！",
+      "cleared": "已取消快捷鍵！"
+    }
+  },
+  "releaseVersion": {
+    "options": {
+      "patch": "補丁版本",
+      "minor": "次版本",
+      "major": "主版本",
+      "promoteBeta": "將 beta 提升為正式版",
+      "nextBeta": "下一個 beta",
+      "nextPatchBeta": "下一個補丁 beta",
+      "custom": "自定義版本"
+    },
+    "prompts": {
+      "yesNoDefaultYes": " (Y/n): ",
+      "yesNoDefaultNo": " (y/N): ",
+      "enterChoice": "\n請輸入選擇 (1-{{max}}): ",
+      "enterCustomVersion": "請輸入自定義版本號: ",
+      "confirmRelease": "是否繼續更新版本並建立 tag？",
+      "pushNow": "是否立即推送提交和 tag 到遠端倉庫？"
+    },
+    "messages": {
+      "currentVersion": "當前版本：{{version}}",
+      "selectNextVersion": "請選擇下一個版本：",
+      "invalidChoice": "選擇無效，預設使用第一個候選版本。",
+      "summaryTitle": "釋出摘要：",
+      "summaryBranch": "- 分支：{{branch}}",
+      "summaryCurrentVersion": "- 當前版本：{{version}}",
+      "summaryNextVersion": "- 新版本：{{version}}",
+      "summaryTag": "- Tag：{{tag}}",
+      "cancelled": "已取消。",
+      "createdCommitAndTag": "已成功建立提交和 tag。",
+      "pushCompleted": "推送完成。",
+      "pushSkipped": "已跳過推送，你之後可以執行：",
+      "pushBranchLater": "git push origin {{branch}}",
+      "pushTagLater": "git push origin {{tag}}"
+    },
+    "errors": {
+      "unsupportedVersion": "不支援的版本格式：{{version}}",
+      "cargoVersionNotFound": "未能在 Cargo.toml 中找到版本欄位",
+      "cargoPackageNameNotFound": "未能在 Cargo.toml 中找到包名欄位",
+      "cargoLockVersionNotFound": "未能在 Cargo.lock 中找到版本欄位",
+      "releaseStagingIncomplete": "釋出暫存檔案不完整，當前已暫存：{{stagedFiles}}",
+      "workingTreeNotClean": "當前工作區不乾淨，請先提交或暫存現有改動。",
+      "tagExists": "Tag {{tag}} 已存在。",
+      "remoteTagExists": "遠端 origin 上已存在 Tag {{tag}}。",
+      "branchNotMain": "只能在 main 分支建立釋出，當前分支：{{branch}}",
+      "versionMismatch": "檢測到版本不一致：package.json={{packageVersion}}，tauri.conf.json={{tauriVersion}}，Cargo.toml={{cargoVersion}}，Cargo.lock={{cargoLockVersion}}",
+      "packageVersionInvalid": "package.json 中的版本號缺失或無效",
+      "tauriVersionInvalid": "src-tauri/tauri.conf.json 中的版本號缺失或無效",
+      "invalidLang": "無效的 --lang 引數，請使用 zh 或 en。"
+    }
+  }
+}
