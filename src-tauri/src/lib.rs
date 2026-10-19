@@ -67,7 +67,7 @@ fn remove_note(
     Ok(())
 }
 #[tauri::command]
-fn open_note(app: tauri::AppHandle, id: String, pinned: bool) -> Result<(), String> {
+async fn open_note(app: tauri::AppHandle, id: String, pinned: bool) -> Result<(), String> {
     valid_id(&id)?;
     let label = format!("note-{}", id);
     if let Some(w) = app.get_webview_window(&label) {

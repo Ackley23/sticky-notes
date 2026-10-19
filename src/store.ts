@@ -96,6 +96,14 @@ export function sanitize(html: string) {
       )
         el.removeAttribute(attr.name);
     }
+    if (el.hasAttribute("class")) {
+      el.setAttribute(
+        "class",
+        Array.from(el.classList)
+          .filter((c) => /^highlight-(yellow|green|blue|pink)$/.test(c))
+          .join(" ")
+      );
+    }
     const src = el.getAttribute("src");
     if (src && !/^data:image\/(png|jpeg|gif|webp);base64,/i.test(src)) el.removeAttribute("src");
     const href = el.getAttribute("href");
@@ -158,7 +166,16 @@ export async function loadNotes(): Promise<Note[]> {
   const notes = desktop
     ? await invoke<Note[]>("load_notes")
     : await browserStore<Note[]>("readonly", (s) => s.getAll());
-  return notes.filter((n) => n.id && typeof n.html === "string");
+  return notes
+    .filter((n) => n && /^[a-f0-9-]{36}$/i.test(n.id) && typeof n.html === "string")
+    .map((n) => ({
+      ...createNote(),
+      ...n,
+      title: typeof n.title === "string" ? n.title : "",
+      tags: Array.isArray(n.tags) ? n.tags.filter((t) => typeof t === "string") : [],
+      color: Math.max(0, Math.min(7, Math.floor(Number(n.color) || 0))),
+      fontSize: Math.max(12, Math.min(36, Number(n.fontSize) || 16)),
+    }));
 }
 export async function saveNote(note: Note) {
   if (desktop) await invoke("save_note", { note });

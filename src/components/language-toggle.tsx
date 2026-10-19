@@ -4,7 +4,7 @@ import { emit } from "@tauri-apps/api/event";
 import { invoke } from "@tauri-apps/api/core";
 
 export const LANGUAGES = [
-  { value: "en",     labelKey: "language.en"     },
+  { value: "en", labelKey: "language.en" },
   { value: "zhHant", labelKey: "language.zhHant" },
   { value: "zhHans", labelKey: "language.zhHans" },
 ] as const;
@@ -65,7 +65,7 @@ export function LanguageSelect() {
       onChange={async (e) => {
         await applyLanguage(i18n, t, e.target.value);
       }}
-      className="border-input bg-background text-foreground focus:ring-ring h-9 rounded-md border px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1"
+      className="border-input bg-background text-foreground focus:ring-ring h-9 rounded-md border px-3 py-1 text-sm shadow-sm focus:ring-1 focus:outline-none"
     >
       {LANGUAGES.map((lang) => (
         <option key={lang.value} value={lang.value}>

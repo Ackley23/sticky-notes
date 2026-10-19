@@ -295,13 +295,12 @@ export default function App() {
       }
       if (e.key.toLowerCase() === "d" && selected) {
         e.preventDefault();
-        const n = notesRef.current.find((n) => n.id === selected);
-        if (n) void softDelete(n);
+        window.dispatchEvent(new CustomEvent("delete-active-note", { detail: selected }));
       }
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [add, selected, softDelete]);
+  }, [add, selected]);
   useEffect(() => {
     if (!desktop || detachedId) return;
     let disposed = false;
@@ -1072,6 +1071,20 @@ function Editor({
   const [selectedImage, setSelectedImage] = useState<HTMLImageElement | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const queue = useRef(Promise.resolve());
+  const requestDelete = useCallback(() => {
+    if (timer.current) {
+      clearTimeout(timer.current);
+      timer.current = null;
+    }
+    void queue.current.finally(() => onDelete(draftRef.current));
+  }, [onDelete]);
+  useEffect(() => {
+    const handler = (event: Event) => {
+      if ((event as CustomEvent<string>).detail === draftRef.current.id) requestDelete();
+    };
+    window.addEventListener("delete-active-note", handler);
+    return () => window.removeEventListener("delete-active-note", handler);
+  }, [requestDelete]);
   const selection = useRef<Range | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const [reminder, setReminder] = useState(note.reminder ? localDateTime(note.reminder) : "");
@@ -1532,17 +1545,7 @@ function Editor({
                 label="匯出便箋"
                 onClick={() => setPanel(panel === "export" ? null : "export")}
               />
-              <IconButton
-                icon={Trash2}
-                label="刪除便箋"
-                onClick={() => {
-                  if (timer.current) {
-                    clearTimeout(timer.current);
-                    timer.current = null;
-                  }
-                  queue.current.finally(() => onDelete(draftRef.current));
-                }}
-              />
+              <IconButton icon={Trash2} label="刪除便箋" onClick={requestDelete} />
             </div>
           </div>
           {panel && (
