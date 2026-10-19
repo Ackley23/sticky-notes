@@ -25,6 +25,12 @@ A local-first desktop sticky notes app built with **Tauri 2, React 19, and TypeS
 - **Privacy screen:** a four-digit PIN hides content and titles from the dashboard/search. It does not encrypt stored data.
 - **Smart links and export:** URLs, email, phone numbers, structured dates, and supported addresses; Markdown/JSON export, JSON backup/import, and PDF through system printing.
 
+## Download and releases
+
+Download Windows x64 `.exe` or `.msi` installers from [Latest release](https://github.com/Ackley23/sticky-notes/releases/latest). GitHub Actions checks and packages every push to `main` and pull request. Push a `vX.Y.Z` tag or run **Actions → Build and release → Run workflow** on `main` to publish a release and download assets automatically. Installers are unsigned; in-app updates are not configured.
+
+For version bumps and tagging, use `pnpm release:version 0.1.1 --push` from a clean `main`. See the [release guide](docs/RELEASING.md).
+
 ## Get started
 
 Install Node.js, pnpm, Rust, and the platform build prerequisites for Tauri. Windows requires MSVC build tools and WebView2.

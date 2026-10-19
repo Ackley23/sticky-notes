@@ -2,6 +2,16 @@
 
 日期：2026-10-19
 
+## GitHub 自動建置與下載發行（2026-10-19）
+
+- 新增 `.github/workflows/build.yml`：`main` 提交與 PR 執行檢查並建置 Windows x64 NSIS／MSI，安裝包作為 Actions Artifacts 保留 14 天。
+- 推送與版本相符的 `vX.Y.Z` tag，或在 GitHub 網站從 `main` 手動執行流程，會在檢查與打包成功後建立 Release、版本 tag、安裝包下載與 SHA-256 校驗檔。
+- 補齊 `pnpm release:version <X.Y.Z> [--push]`，同步 package、Tauri、Cargo 與 Cargo.lock 版本，建立發版提交及 annotated tag，可原子推送 main 與 tag。
+- 發版腳本測試 5 項通過，涵蓋版本檢查、Windows 換行、實際提交／tag／本機遠端推送，以及非法版本、髒工作目錄、重複 tag、版本不一致的拒絕處理。`pnpm check` 與 Rust 測試 3 項通過。
+- Windows 正式打包通過：`pnpm tauri:build --bundles nsis,msi -- --locked` 產生 NSIS `.exe`（2.21 MiB）與 MSI（3.03 MiB）。
+- 安裝包尚未簽章；應用內自動更新未配置。macOS／Linux 尚未納入這次自動打包。
+- GitHub 遠端流程尚待首次推送後驗證。
+
 ## PRD 對照
 
 | 層級 | 模組 | 狀態與邊界 |

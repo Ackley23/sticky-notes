@@ -25,6 +25,12 @@
 - **防窺畫面**：4 位數 PIN 遮蔽便箋內容，總表與搜尋也不顯示私人標題／內文；此功能不加密資料。
 - **智慧連結與匯出**：網址、Email、電話、結構化日期與支援格式的地址；Markdown／JSON 匯出、JSON 備份匯入、系統列印另存 PDF。
 
+## 下載與發行
+
+從[最新版本](https://github.com/Ackley23/sticky-notes/releases/latest)下載 Windows x64 `.exe` 或 `.msi` 安裝包。GitHub Actions 會在推送 `main` 與 Pull Request 時自動檢查、建置及打包；推送 `vX.Y.Z` tag，或在 GitHub 的 **Actions → Build and release → Run workflow** 選擇 `main` 執行，即會自動建立版本標籤與 Release 並提供下載。安裝包尚未簽章，應用內自動更新尚未設定。
+
+後續版本可在乾淨的 `main` 執行 `pnpm release:version 0.1.1 --push`，同步版本號、建立提交與 tag 並推送。詳細操作見[發版指南](docs/RELEASING.md)。
+
 ## 開發與執行
 
 請先安裝 Node.js、pnpm、Rust 與各平台所需的 Tauri 建置工具。Windows 需 MSVC 建置工具與 WebView2。

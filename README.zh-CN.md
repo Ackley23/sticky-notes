@@ -25,6 +25,12 @@
 - **隐私遮罩**：四位 PIN 隐藏便笺内容，列表和搜索也不显示私人标题／正文；此功能不会加密数据。
 - **智能链接与导出**：网址、邮箱、电话号码、结构化日期及支持格式的地址；Markdown／JSON 导出、JSON 备份导入、通过系统打印保存 PDF。
 
+## 下载与发布
+
+从[最新版本](https://github.com/Ackley23/sticky-notes/releases/latest)下载 Windows x64 `.exe` 或 `.msi` 安装包。GitHub Actions 会在推送 `main` 和 Pull Request 时自动检查、构建及打包；推送 `vX.Y.Z` tag，或在 GitHub 的 **Actions → Build and release → Run workflow** 选择 `main` 执行，即会自动创建版本标签与 Release 并提供下载。安装包尚未签名，应用内自动更新尚未配置。
+
+后续版本可在干净的 `main` 执行 `pnpm release:version 0.1.1 --push`，同步版本号、创建提交与 tag 并推送。详细操作见[发布指南](docs/RELEASING.md)。
+
 ## 开发与运行
 
 请先安装 Node.js、pnpm、Rust 及各平台所需的 Tauri 构建工具。Windows 需要 MSVC 构建工具和 WebView2。
