@@ -1,195 +1,83 @@
-> 此檔保留原始範本說明。Sticky Notes 的目前功能與啟動方式請參閱 [README.md](README.md)。
+# Sticky Notes 便利贴
 
-<div align="center">
+[English](README.md) · [繁體中文](README.zh-TW.md) · [简体中文](README.zh-CN.md)
 
-# Tauri App Template
+基于 **Tauri 2、React 19 和 TypeScript** 的本地优先桌面便利贴应用。随手记录灵感、待办事项和参考信息，让便笺陪伴日常工作。
 
-[English](./README.md) | 简体中文
+[GitHub 项目](https://github.com/Ackley23/sticky-notes) · [问题反馈](https://github.com/Ackley23/sticky-notes/issues) · [版本发布](https://github.com/Ackley23/sticky-notes/releases)
 
-[![Tauri](https://img.shields.io/badge/Tauri-2.0-24C8DB?logo=tauri)](https://tauri.app/)
-[![React](https://img.shields.io/badge/React-19-61DAFB?logo=react)](https://react.dev/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.6-3178C6?logo=typescript)](https://www.typescriptlang.org/)
-[![License](https://img.shields.io/badge/License-MIT-green)](./LICENSE)
+![Sticky Notes 工作台](screenshots/sticky-notes-workspace.jpg)
 
-基于 Tauri v2 + React 19 + TypeScript + shadcn/ui 的桌面应用模板。
+## 功能特色
 
-</div>
+- **便笺工作台**：八种颜色、标签、全文搜索、颜色筛选、固定、归档、网格／列表及排序。
+- **富文本编辑**：粗体、斜体、下划线、删除线、待办清单、项目／编号列表、字号调整及随主题切换的文字高亮。
+- **图片**：粘贴或导入单张不超过 8 MB 的图片，可缩放、删除和另存。
+- **独立桌面便笺**：默认阅读模式，通过左上角的编辑／完成按钮切换；最小尺寸为 200 × 160 逻辑像素。
+- **置顶与透明度**：失焦不透明度可设为 30–100%，调整时实时预览；关闭预览后仅在置顶且失焦时生效。
+- **安静阅读**：失焦且鼠标未停留时隐藏工具栏，失焦滚动条缩窄为 3 px；可隐藏系统标题栏，通过拖动工具栏空白处移动。
+- **重启恢复**：保存已打开便笺的位置、尺寸和置顶状态；手动关闭或删除的便笺不会重新弹出，原显示器不可用时移回可见范围。
+- **系统托盘**：点击图标切换主窗口显示／隐藏；关闭主窗口后仍在后台运行，从托盘菜单选择退出才会结束应用。
+- **Windows 自动启动**：在设置与偏好中控制是否在 Windows 登录时启动。
+- **主题与语言**：浅色、深色、跟随系统；英语、繁体中文、简体中文，偏好实时同步到便笺窗口。
+- **本地自动保存**：桌面使用 SQLite，浏览器预览使用 IndexedDB；回收站保留 30 天，可恢复误删便笺。
+- **提醒**：指定时间、倒计时预设、音效、自定义铃声及延后提醒。
+- **隐私遮罩**：四位 PIN 隐藏便笺内容，列表和搜索也不显示私人标题／正文；此功能不会加密数据。
+- **智能链接与导出**：网址、邮箱、电话号码、结构化日期及支持格式的地址；Markdown／JSON 导出、JSON 备份导入、通过系统打印保存 PDF。
 
-## 预览
+## 开发与运行
 
-![应用截图](./screenshots/app.png)
+请先安装 Node.js、pnpm、Rust 及各平台所需的 Tauri 构建工具。Windows 需要 MSVC 构建工具和 WebView2。
 
-## 特点
-
-- ✨ **现代化技术栈** - Tauri v2 + React 19 + TypeScript + Vite
-- 🎨 **精美 UI 组件** - 集成 shadcn/ui 组件库和 Tailwind CSS v4
-- 🌓 **暗色模式支持** - 内置亮色/暗色主题切换
-- 🌍 **国际化支持** - 集成 i18next，支持中英文切换
-- 🖼️ **自定义标题栏** - 无边框透明窗口，支持拖拽、最小化、最大化、关闭
-- 🗂️ **多窗口管理** - 支持创建子窗口、窗口生命周期管理、延迟销毁机制
-- 🔔 **系统托盘集成** - 支持托盘图标、菜单和窗口隐藏/显示
-- ⌨️ **全局快捷键** - 支持注册全局快捷键，应用未聚焦时也能响应
-- 🔄 **自动发布与更新** - 支持基于 `vX.Y.Z` 标签的 GitHub Actions 自动构建、Release 发布与自动更新
-- 📦 **开箱即用** - 预配置 Prettier、ESLint 和 TypeScript 严格模式
-- 🚀 **快速开发** - Vite HMR + Tauri 热重载
-
-## 技术栈
-
-- **桌面框架**: [Tauri v2](https://tauri.app/)
-- **前端框架**: [React 19](https://react.dev/) + [TypeScript](https://www.typescriptlang.org/)
-- **构建工具**: [Vite](https://vite.dev/)
-- **UI 组件**: [shadcn/ui](https://ui.shadcn.com/)
-- **样式方案**: [Tailwind CSS v4](https://tailwindcss.com/)
-- **代码格式化**: [Prettier](https://prettier.io/)
-
-## 开始使用
-
-### 环境要求
-
-- Node.js >= 18
-- pnpm >= 9
-- Rust >= 1.70
-
-### 安装依赖
-
-```bash
+```sh
+git clone git@github.com-ackley23:Ackley23/sticky-notes.git
+cd sticky-notes
 pnpm install
+pnpm tauri:dev
 ```
 
-### 开发模式
+此 SSH 地址使用本机的 `github.com-ackley23` 别名。其他用户可使用 HTTPS：
 
-```bash
-pnpm tauri dev
+```sh
+git clone https://github.com/Ackley23/sticky-notes.git
 ```
 
-### 构建发布
+| 命令 | 用途 |
+| --- | --- |
+| `pnpm dev` | 浏览器预览，http://localhost:1420 |
+| `pnpm tauri:dev` | 桌面开发模式 |
+| `pnpm build` | TypeScript 和前端生产构建 |
+| `pnpm tauri:build` | 在当前操作系统构建桌面安装包 |
+| `pnpm check` | 格式、Lint、多语言检查及前端构建 |
+| `pnpm i18n:check` | 检查三套界面翻译 |
+| `cargo test --manifest-path src-tauri/Cargo.toml --lib` | Rust 存储与会话测试 |
 
-```bash
-pnpm tauri build
-```
+浏览器预览不提供原生窗口、托盘或 Windows 自动启动功能。各操作系统需要分别构建；目前在 Windows 开发验证，macOS／Linux 仍待真机测试。macOS 透明窗口使用 Tauri 私有 API 选项，会影响 Mac App Store 上架资格。
 
-### 版本管理
+## 快捷键
 
-`pnpm release:version` 是版本发布的唯一入口。
+Windows／Linux 使用 Ctrl，macOS 使用 ⌘。
 
-```bash
-pnpm release:version
-pnpm release:version --lang zh
-pnpm release:version --lang en
-```
+| 操作 | 快捷键 |
+| --- | --- |
+| 新建／删除当前便笺 | Ctrl/⌘ + N / D |
+| 总列表／搜索 | Ctrl/⌘ + H / F |
+| 粗体／斜体／下划线 | Ctrl/⌘ + B / I / U |
+| 删除线 | Ctrl/⌘ + T |
+| 项目列表 | Ctrl/⌘ + Shift + L |
+| 增大／减小字号 | Ctrl/⌘ + Shift + > / < |
+| 全局新建／唤醒总列表 | Ctrl/⌘ + Alt + N / H |
 
-它会交互式完成发布前检查和版本更新流程：
-- 确保工作区干净
-- 强制要求当前分支为 `main`
-- 校验 `package.json`、`src-tauri/tauri.conf.json` 和 `src-tauri/Cargo.toml` 的版本一致
-- 检查目标 tag 是否已在本地或远端 `origin` 存在
-- 同步更新这三个版本文件
-- 创建发布提交和 `vX.Y.Z` tag
-- 可选地推送分支和 tag
+## 数据与当前范围
 
-## 添加 shadcn/ui 组件
+桌面数据位于 Tauri 的 `app_data_dir()/sticky-notes.sqlite3`，Windows 通常为 `%APPDATA%\com.david136755.stickynotes\sticky-notes.sqlite3`。请使用设置中的 JSON 导出备份，以包含 WAL 中已提交的数据；导入时会创建新便笺。
 
-```bash
-pnpm dlx shadcn@latest add <component-name>
-```
+PIN 仅用于屏幕防窥，不是加密：数据库、图片和 JSON 备份包含明文内容。提醒需要程序持续运行，恢复运行时会检查逾期提醒。同一张便笺同时编辑时采用最后一次写入。
 
-示例：
+云同步目前为规划页面，尚未实现 Google Drive／OneDrive 登录与同步、协作、手机 App／桌面小组件或手写笔迹。PDF 使用系统打印对话框；自动更新尚未配置发布服务。部分文字样式无法通过标准 Markdown 保留。
 
-```bash
-pnpm dlx shadcn@latest add button
-pnpm dlx shadcn@latest add input
-pnpm dlx shadcn@latest add dialog
-```
+验证详情见[实现状态](docs/implementation-status.md)。模板旧文档可能包含当前产品范围以外的功能。程序入口为 `src/main.tsx` → `src/App.tsx`，界面翻译位于 `src/i18n/locales/sticky-*.json`。
 
-## 代码格式化
+## 许可证
 
-```bash
-pnpm format        # 格式化代码
-pnpm format:check  # 检查代码格式
-```
-
-## 项目结构
-
-```
-.
-├── src/                    # 前端源码
-│   ├── components/         # React 组件
-│   │   └── ui/            # shadcn/ui 组件
-│   ├── i18n/              # 国际化
-│   │   ├── index.ts       # i18n 配置
-│   │   └── locales/       # 翻译文件
-│   ├── lib/               # 工具函数
-│   ├── pages/             # 页面组件
-│   │   ├── home.tsx       # 主窗口页面
-│   │   ├── about.tsx      # 关于窗口页面
-│   │   └── settings.tsx   # 设置窗口页面
-│   └── main.tsx           # 前端入口和基于 pathname 的页面选择器
-├── src-tauri/             # Tauri/Rust 后端
-│   ├── src/               # Rust 源码
-│   └── tauri.conf.json    # Tauri 配置
-├── docs/                  # 文档
-│   ├── AUTO_UPDATE.zh-CN.md # 自动更新指南
-│   ├── I18N.zh-CN.md      # 国际化指南
-│   └── GLOBAL_SHORTCUT.zh-CN.md # 全局快捷键指南
-├── components.json        # shadcn/ui 配置
-└── package.json
-```
-
-## CI/CD
-
-本项目使用 GitHub Actions 实现自动化构建和发布。
-
-### 自动化发布
-
-工作流会在推送符合 `v*` 格式的标签时触发，例如 `v0.1.0`。
-推荐通过 `pnpm release:version` 发版，它会自动创建匹配的 `vX.Y.Z` tag。
-
-**手动创建并推送标签示例：**
-```bash
-git tag v0.1.0
-git push origin v0.1.0
-```
-
-### 构建产物
-
-工作流会生成：
-- **NSIS 安装包** - Windows 安装程序
-- **更新文件** - `latest.json` 用于自动更新支持
-
-### 自动更新配置
-
-要启用自动更新功能，需要：
-
-1. 生成签名密钥：`pnpm tauri signer generate -w ~/.tauri/myapp.key`
-2. 添加 GitHub Secrets：`TAURI_SIGNING_PRIVATE_KEY` 和 `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`
-
-**注意：** `src-tauri/tauri.conf.json` 中的公钥和更新端点占位符会在发布构建期间由 GitHub Actions 自动替换。自动更新依赖已发布的 GitHub Release 对外提供最新版本的 `latest.json` 资源。
-
-详细配置说明请查看 [自动更新配置文档](./docs/AUTO_UPDATE.zh-CN.md)。
-
-### 代码签名（可选）
-
-如需启用代码签名，在 GitHub 仓库设置中添加以下 Secrets：
-- `TAURI_SIGNING_PRIVATE_KEY` - 私钥内容
-- `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` - 私钥密码
-
-不配置这些 Secrets 也能正常构建，只是安装包不会被签名。
-
-### 多平台支持
-
-如需启用 macOS 和 Linux 构建，取消 `.github/workflows/release.yml` 中对应平台配置的注释即可。
-
-## IDE 推荐
-
-- [VS Code](https://code.visualstudio.com/)
-- [Tauri](https://marketplace.visualstudio.com/items?itemName=tauri-apps.tauri-vscode)
-- [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer)
-
-## License
-
-MIT
-
-## Star History
-
-[![Star History Chart](https://api.star-history.com/svg?repos=kitlib/tauri-app-template&type=Date)](https://star-history.com/#kitlib/tauri-app-template&Date)
-
+[MIT](LICENSE)。基于 Tauri App Template，保留原始许可声明。

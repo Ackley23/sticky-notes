@@ -1,95 +1,83 @@
-# Sticky Notes 自黏便箋
+# Sticky Notes
 
-以 `C:\dev\vm_shared\tauri-app-template` 的 React 19 + TypeScript + Tauri 2 範本為基底，建立本機優先的三語（英文、繁體中文、簡體中文）便箋應用。
+[English](README.md) · [繁體中文](README.zh-TW.md) · [简体中文](README.zh-CN.md)
 
-## 開發與執行
+A local-first desktop sticky notes app built with **Tauri 2, React 19, and TypeScript**. Keep ideas, checklists, and reference notes close to your work.
 
-需求：Node.js、pnpm、Rust，以及 Tauri 對應平台的建置工具（Windows 使用 WebView2 / MSVC）。
+[GitHub](https://github.com/Ackley23/sticky-notes) · [Issues](https://github.com/Ackley23/sticky-notes/issues) · [Releases](https://github.com/Ackley23/sticky-notes/releases)
 
-```powershell
+![Sticky Notes workspace](screenshots/sticky-notes-workspace.jpg)
+
+## Features
+
+- **Dashboard:** eight colors, tags, full-text search, color filters, pinning, archiving, grid/list views, and sorting.
+- **Rich text:** bold, italic, underline, strikethrough, checklists, bulleted/numbered lists, font sizing, and theme-aware highlights.
+- **Images:** paste or import images up to 8 MB each; resize, delete, or save embedded images.
+- **Desktop notes:** independent windows open in view mode; use Edit/Done in the upper-left corner. Minimum size: 200 × 160 logical pixels.
+- **Always on top and opacity:** set inactive opacity to 30–100%, with live preview while adjusting. Outside preview, transparency applies only to pinned, inactive windows.
+- **Quiet reading:** the header hides when a note is inactive and the pointer is outside it; inactive scrollbars narrow to 3 px. Optional frameless windows support dragging from empty header space.
+- **Session restore:** remember open desktop notes, positions, sizes, and pinning across launches. Manually closed or deleted notes stay closed; unavailable monitor positions are moved into view.
+- **System tray:** click the icon to show/hide the main window. Closing the main window keeps the app running; choose Quit from the tray menu to exit.
+- **Windows startup:** enable or disable automatic launch at Windows sign-in in Settings & preferences.
+- **Themes and languages:** light/dark/system appearance; English, Traditional Chinese, and Simplified Chinese with synchronized window preferences.
+- **Local autosave:** SQLite on desktop, IndexedDB in browser preview; deleted notes can be restored from Trash for 30 days.
+- **Reminders:** scheduled times, countdown presets, sounds, custom ringtones, and snooze.
+- **Privacy screen:** a four-digit PIN hides content and titles from the dashboard/search. It does not encrypt stored data.
+- **Smart links and export:** URLs, email, phone numbers, structured dates, and supported addresses; Markdown/JSON export, JSON backup/import, and PDF through system printing.
+
+## Get started
+
+Install Node.js, pnpm, Rust, and the platform build prerequisites for Tauri. Windows requires MSVC build tools and WebView2.
+
+```sh
+git clone git@github.com-ackley23:Ackley23/sticky-notes.git
+cd sticky-notes
 pnpm install
-pnpm dev            # 瀏覽器預覽，http://localhost:1420
-pnpm tauri:dev      # 桌面開發模式
-pnpm build         # TypeScript + 前端正式建置
-pnpm tauri:build    # 於目前作業系統建置安裝包
+pnpm tauri:dev
 ```
 
-Tauri 必須在各自平台建置。此版本在 Windows 驗證，macOS / Linux 尚未實機驗證。Android / iOS 與 Widget 不在此版交付範圍。
+The SSH URL uses your local `github.com-ackley23` host alias. Other contributors can use HTTPS:
 
-## 已實作
-
-- 工作板：八色便箋、釘選、封存、標籤、即時內容搜尋、顏色篩選、網格／清單與排序。
-- 編輯器：粗體、斜體、底線、刪除線、待辦清單、項目／編號清單、字級縮放、四種隨主題切換的文字標注。
-- 圖片：貼上或選取圖片（單張 8 MB），選取圖片後縮放、刪除、另存。
-- 外觀：淺色、深色、系統主題；依紙張相對亮度選用黑／白文字。
-- 桌面：每張便箋可開啟獨立視窗、置頂、主視窗關閉至系統匣、單一應用實例。
-- 儲存：180 ms 防抖自動儲存，Rust + SQLite（WAL / synchronous FULL）；瀏覽器預覽使用 IndexedDB。
-- 垃圾桶：還原、永久刪除確認，啟動時清除已刪除超過 30 天的便箋。
-- 提醒：日期時間、5 / 15 / 30 / 60 分鐘後、到期主視窗顯示並置頂、閃爍、提示音、自訂 1 MB 以下音訊、延後 10 分鐘。
-- 防窺：4 位數 PIN（隨機 salt + SHA-256），鎖定便箋不在總表／搜尋顯示內文或標題。
-- 智慧連結：網址、Email、電話、結構化日期、台灣格式街道地址。日期可帶入提醒，地址使用 Google Maps。
-- 匯出：單張 Markdown、JSON、透過系統列印另存 PDF；全部 JSON 備份與匯入（匯入為新便箋）。
-
-## 快捷鍵
-
-| 操作 | Windows / Linux | macOS |
-| --- | --- | --- |
-| 新增 | Ctrl+N | ⌘+N |
-| 刪除目前便箋 | Ctrl+D | ⌘+D |
-| 總清單 | Ctrl+H | ⌘+H |
-| 搜尋 | Ctrl+F | ⌘+F |
-| 粗體／斜體／底線 | Ctrl+B / I / U | ⌘+B / I / U |
-| 刪除線 | Ctrl+T | ⌘+T |
-| 項目清單 | Ctrl+Shift+L | ⌘+Shift+L |
-| 字級放大／縮小 | Ctrl+Shift+> / < | ⌘+Shift+> / < |
-| 全域新增（桌面） | Ctrl+Alt+N | ⌘+Alt+N |
-| 全域喚醒（桌面） | Ctrl+Alt+H | ⌘+Alt+H |
-
-全域快捷鍵加上 Alt，避免攔截其他應用程式的基本操作。若已被其他程式占用，應用會顯示註冊失敗訊息。
-
-## 資料位置與限制
-
-SQLite 位於 Tauri `app_data_dir()/sticky-notes.sqlite3`，Windows 通常為 `%APPDATA%\com.david136755.stickynotes\sticky-notes.sqlite3`。備份請使用設定中的 JSON 匯出，確保包含 WAL 中已提交的資料。
-
-防窺鎖只用於畫面遮蔽，不是資料加密。資料庫、圖片與 JSON 備份含明文內容。提醒需要程式持續執行；關機期間無法通知，恢復執行後會補顯示逾期提醒。瀏覽器音效可能受自動播放政策限制。
-
-相同便箋同時在兩個視窗編輯時，目前採最後一次寫入；不同便箋不會互相覆蓋。尚未實作文字協同合併。Markdown 保留基本格式及圖片 data URL，色塊標注與部分富文字樣式不屬於標準 Markdown。
-
-雲端同步頁為功能規畫說明，未串接 Google Drive / OneDrive OAuth、背景同步或衝突合併；手機 App、Widget、手寫筆跡亦尚未實作。PDF 使用系統列印流程，未產生獨立 PDF 引擎。
-
-## 驗證
-
-```powershell
-pnpm check
-cargo test --manifest-path src-tauri/Cargo.toml --lib
+```sh
+git clone https://github.com/Ackley23/sticky-notes.git
 ```
 
-詳細範圍與驗證紀錄見 [docs/implementation-status.md](docs/implementation-status.md)。範本原有的 `src/pages`、`src/components` 等檔案予以保留；目前入口為 `src/main.tsx` → `src/App.tsx`。
+| Command | Purpose |
+| --- | --- |
+| `pnpm dev` | Browser preview at http://localhost:1420 |
+| `pnpm tauri:dev` | Desktop development |
+| `pnpm build` | TypeScript and production frontend build |
+| `pnpm tauri:build` | Build desktop packages on the current OS |
+| `pnpm check` | Formatting, lint, localization checks, and frontend build |
+| `pnpm i18n:check` | Check all three UI translation sets |
+| `cargo test --manifest-path src-tauri/Cargo.toml --lib` | Rust storage/session tests |
 
-## 畫面
+Browser preview cannot provide native windows, tray integration, or Windows startup registration. Build separately on each target OS. Windows has been tested during development; macOS/Linux still need device testing. macOS transparency uses Tauri's private API option, which affects Mac App Store eligibility.
 
-![Sticky Notes 工作板](screenshots/sticky-notes-workspace.jpg)
+## Keyboard shortcuts
 
-`docs/AUTO_UPDATE*`、`docs/GLOBAL_SHORTCUT*`、`docs/I18N*` 為原始範本參考文件，與目前產品範圍不同時，以本 README 為準。自動更新未設定發行服務。
+Use Ctrl on Windows/Linux and ⌘ on macOS.
 
-## 獨立桌面便箋
+| Action | Shortcut |
+| --- | --- |
+| New note / delete current note | Ctrl/⌘ + N / D |
+| Dashboard / search | Ctrl/⌘ + H / F |
+| Bold / italic / underline | Ctrl/⌘ + B / I / U |
+| Strikethrough | Ctrl/⌘ + T |
+| List | Ctrl/⌘ + Shift + L |
+| Increase / decrease font size | Ctrl/⌘ + Shift + > / < |
+| Global new note / show dashboard | Ctrl/⌘ + Alt + N / H |
 
-從工作板按「在桌面開啟」，便箋預設以閱讀模式顯示。按右上角「編輯」修改，再按「完成」儲存並回到閱讀模式。右上角「置頂」可讓便箋保持顯示在其他視窗上方；再次按「取消置頂」恢復一般視窗層級。置頂狀態會保存，兩種模式皆可切換。
+## Data and current scope
 
-## 獨立便箋系統標題列
+Desktop data is stored at Tauri's `app_data_dir()/sticky-notes.sqlite3`. On Windows this is usually `%APPDATA%\com.david136755.stickynotes\sticky-notes.sqlite3`. Use JSON export in Settings to back up notes, including committed WAL data. Imports create new notes.
 
-「設定與偏好」中的「隱藏獨立便箋的系統標題列」可移除系統圖示、標題、最小化、最大化及系統關閉按鈕。切換會立即套用到所有已開啟的獨立便箋，並保存於 SQLite，之後開啟的便箋也會沿用。主視窗保持原狀。
+The PIN is a screen privacy feature, not encryption: the database, images, and JSON backups contain readable content. Reminders require the app to be running; overdue reminders are checked when it resumes. Concurrent edits to the same note use the last write.
 
-無標題列時，以便箋上方的模式名稱／空白區作為拖曳區；編輯、置頂與便箋內的 × 關閉按鈕仍保留。取消勾選可恢復系統標題列。
+Cloud sync is a roadmap screen. Google Drive/OneDrive login and synchronization, collaboration, mobile apps/widgets, and handwriting are not implemented. PDF uses the system print dialog; automatic update distribution is not configured. Some styling cannot be represented in standard Markdown.
 
-## 介面語言
+See [implementation status](docs/implementation-status.md) for verification details. Legacy template documents may describe features outside the current scope. Entry point: `src/main.tsx` → `src/App.tsx`; UI translations: `src/i18n/locales/sticky-*.json`.
 
-「設定與偏好 → 介面語言」提供 English、繁體中文、简体中文。首次啟動依系統語言選擇，手動選擇後會保留偏好，主視窗與已開啟的獨立便箋即時同步。日期、排序、編輯工具、提示與系統匣選單會跟隨語言。新安裝的範例便箋依首次使用的語言建立；已保存的標題、標籤與內文不會因切換介面而改寫。
+## License
 
-沿用範本的 i18next / react-i18next；便箋文案獨立放在 `src/i18n/locales/sticky-*.json`。新增文案請使用 `tr()` 並補齊三套語系。
-
-```powershell
-pnpm i18n:check
-```
-
-此檢查會比對語系鍵值、插值參數、區域語言代碼與來源碼的未翻譯文字，並已整合至 `pnpm check`。
+[MIT](LICENSE). Built on the Tauri App Template; the original license notice is retained.
