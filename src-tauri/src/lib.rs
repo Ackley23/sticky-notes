@@ -3,6 +3,8 @@ use rusqlite::{params, Connection, OptionalExtension};
 use std::{fs, path::Path, sync::Mutex};
 use tauri::{Emitter, Manager};
 struct Storage(Mutex<Connection>);
+const NOTE_MIN_WIDTH: f64 = 200.;
+const NOTE_MIN_HEIGHT: f64 = 160.;
 fn database(path: &Path) -> Result<Connection, String> {
     let conn = Connection::open(path).map_err(|e| e.to_string())?;
     conn.execute_batch("PRAGMA journal_mode=WAL; PRAGMA synchronous=FULL; CREATE TABLE IF NOT EXISTS notes (id TEXT PRIMARY KEY NOT NULL, payload TEXT NOT NULL); CREATE TABLE IF NOT EXISTS preferences (key TEXT PRIMARY KEY NOT NULL, value TEXT NOT NULL);").map_err(|e|e.to_string())?;
@@ -77,6 +79,11 @@ async fn open_note(
     let frameless = read_frameless(&*state.0.lock().map_err(|e| e.to_string())?)?;
     let label = format!("note-{}", id);
     if let Some(w) = app.get_webview_window(&label) {
+        w.set_min_size(Some(tauri::LogicalSize::new(
+            NOTE_MIN_WIDTH,
+            NOTE_MIN_HEIGHT,
+        )))
+        .map_err(|e| e.to_string())?;
         w.set_decorations(!frameless).map_err(|e| e.to_string())?;
         w.set_always_on_top(pinned).map_err(|e| e.to_string())?;
         w.emit("note-opened", ()).map_err(|e| e.to_string())?;
@@ -90,7 +97,7 @@ async fn open_note(
         )
         .title("Sticky Notes")
         .inner_size(390., 500.)
-        .min_inner_size(320., 360.)
+        .min_inner_size(NOTE_MIN_WIDTH, NOTE_MIN_HEIGHT)
         .always_on_top(pinned)
         .transparent(true)
         .decorations(!frameless)

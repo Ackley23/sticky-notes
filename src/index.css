@@ -1380,7 +1380,35 @@ body:has(.detached) {
   height: 100vh;
 }
 .detached .rich-editor {
+  min-height: 0;
   padding: 15px 20px;
+}
+@media (max-width: 300px) {
+  .detached .note-action-label {
+    display: none;
+  }
+  .detached .note-view-title,
+  .detached .editor-title {
+    padding: 8px 12px 0;
+  }
+  .detached .rich-editor {
+    padding: 8px 12px;
+  }
+  .detached .note-view-footer {
+    padding: 6px 12px;
+    flex-wrap: wrap;
+  }
+}
+@media (max-height: 280px) {
+  .detached .note-editor {
+    overflow-y: auto;
+  }
+  .detached .rich-editor {
+    flex: 1 0 50px;
+  }
+  .detached .note-view-title h1 {
+    font-size: 16px;
+  }
 }
 .detached .format-toolbar {
   padding: 6px 4px;

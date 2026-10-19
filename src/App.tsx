@@ -1565,10 +1565,12 @@ function Editor({
             {unlocked && (
               <button
                 className="note-mode-button"
+                aria-label={editing ? tr("完成") : tr("編輯")}
+                title={editing ? tr("完成") : tr("編輯")}
                 onClick={() => (editing ? finishEditing() : setEditing(true))}
               >
                 {editing ? <Eye size={14} /> : <Pencil size={14} />}
-                {editing ? tr("完成") : tr("編輯")}
+                <span className="note-action-label">{editing ? tr("完成") : tr("編輯")}</span>
               </button>
             )}
           </span>
@@ -1595,11 +1597,14 @@ function Editor({
             <button
               className={`note-pin-button ${draft.pinned ? "is-pinned" : ""}`}
               aria-pressed={draft.pinned}
+              aria-label={draft.pinned ? tr("取消置頂") : tr("置頂")}
               title={tr("讓便箋顯示在其他視窗上方")}
               onClick={() => void togglePin()}
             >
               <Pin size={14} />
-              {draft.pinned ? tr("取消置頂") : tr("置頂")}
+              <span className="note-action-label">
+                {draft.pinned ? tr("取消置頂") : tr("置頂")}
+              </span>
             </button>
           ) : (
             <IconButton
