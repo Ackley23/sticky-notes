@@ -216,6 +216,17 @@ export default function App() {
     document.documentElement.dataset.theme = dark ? "dark" : "light";
   }, [dark]);
   useEffect(() => {
+    const changed = (event: StorageEvent) => {
+      if (
+        event.key === "sticky-theme" &&
+        ["light", "dark", "system"].includes(event.newValue || "")
+      )
+        setTheme(event.newValue as Theme);
+    };
+    window.addEventListener("storage", changed);
+    return () => window.removeEventListener("storage", changed);
+  }, []);
+  useEffect(() => {
     if (!toast) return;
     const t = setTimeout(() => setToast(""), 3500);
     return () => clearTimeout(t);
@@ -1066,6 +1077,13 @@ function Editor({
   const [panel, setPanel] = useState<"reminder" | "lock" | "export" | null>(null);
   const [pin, setPin] = useState("");
   const [unlocked, setUnlocked] = useState(!note.pinHash);
+  useEffect(() => {
+    const hide = () => {
+      if (document.hidden && draftRef.current.pinHash) setUnlocked(false);
+    };
+    document.addEventListener("visibilitychange", hide);
+    return () => document.removeEventListener("visibilitychange", hide);
+  }, []);
   const [pinError, setPinError] = useState("");
   const [tagText, setTagText] = useState(note.tags.join(", "));
   const [selectedImage, setSelectedImage] = useState<HTMLImageElement | null>(null);
@@ -1217,7 +1235,14 @@ function Editor({
             }}
           />
           {!detachedId && <IconButton icon={ArrowUpRight} label="在桌面開啟" onClick={onPopout} />}
-          <IconButton icon={X} label="關閉便箋" onClick={onClose} />
+          <IconButton
+            icon={X}
+            label="關閉便箋"
+            onClick={() => {
+              if (draftRef.current.pinHash) setUnlocked(false);
+              onClose();
+            }}
+          />
         </div>
       </div>
       {!unlocked ? (
