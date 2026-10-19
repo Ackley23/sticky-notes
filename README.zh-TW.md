@@ -36,13 +36,13 @@
 請先安裝 Node.js、pnpm、Rust 與各平台所需的 Tauri 建置工具。Windows 需 MSVC 建置工具與 WebView2。
 
 ```sh
-git clone git@github.com-ackley23:Ackley23/sticky-notes.git
+git clone git@github.com:Ackley23/sticky-notes.git
 cd sticky-notes
 pnpm install
 pnpm tauri:dev
 ```
 
-此 SSH 網址使用本機的 `github.com-ackley23` 別名。其他使用者可使用 HTTPS：
+也可以使用 HTTPS 複製專案：
 
 ```sh
 git clone https://github.com/Ackley23/sticky-notes.git

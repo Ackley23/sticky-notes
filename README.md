@@ -36,13 +36,13 @@ For version bumps and tagging, use `pnpm release:version 0.1.1 --push` from a cl
 Install Node.js, pnpm, Rust, and the platform build prerequisites for Tauri. Windows requires MSVC build tools and WebView2.
 
 ```sh
-git clone git@github.com-ackley23:Ackley23/sticky-notes.git
+git clone git@github.com:Ackley23/sticky-notes.git
 cd sticky-notes
 pnpm install
 pnpm tauri:dev
 ```
 
-The SSH URL uses your local `github.com-ackley23` host alias. Other contributors can use HTTPS:
+Alternatively, clone with HTTPS:
 
 ```sh
 git clone https://github.com/Ackley23/sticky-notes.git
