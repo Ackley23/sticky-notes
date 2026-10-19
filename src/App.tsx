@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { Fragment, useCallback, useEffect, useRef, useState } from "react";
 import {
   StickyNote,
   Plus,
@@ -34,6 +34,8 @@ import {
   Tag,
   Keyboard,
   ExternalLink,
+  Pencil,
+  Eye,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { getCurrentWindow } from "@tauri-apps/api/window";
@@ -1070,6 +1072,7 @@ function Editor({
   notify: (s: string) => void;
 }) {
   const [draft, setDraft] = useState(note);
+  const [editing, setEditing] = useState(!detachedId);
   const draftRef = useRef(note);
   const editor = useRef<HTMLDivElement>(null);
   const [saved, setSaved] = useState(true);
@@ -1077,6 +1080,22 @@ function Editor({
   const [panel, setPanel] = useState<"reminder" | "lock" | "export" | null>(null);
   const [pin, setPin] = useState("");
   const [unlocked, setUnlocked] = useState(!note.pinHash);
+  useEffect(() => {
+    if (!desktop || !detachedId) return;
+    let disposed = false;
+    let stop: (() => void) | undefined;
+    void listen("note-opened", () => {
+      setEditing(false);
+      setPanel(null);
+    }).then((fn) => {
+      if (disposed) fn();
+      else stop = fn;
+    });
+    return () => {
+      disposed = true;
+      stop?.();
+    };
+  }, []);
   useEffect(() => {
     const hide = () => {
       if (document.hidden && draftRef.current.pinHash) setUnlocked(false);
@@ -1086,6 +1105,12 @@ function Editor({
   }, []);
   const [pinError, setPinError] = useState("");
   const [tagText, setTagText] = useState(note.tags.join(", "));
+  useEffect(() => {
+    if (editing || !saved) return;
+    draftRef.current = note;
+    setDraft(note);
+    setTagText(note.tags.join(", "));
+  }, [note, editing, saved]);
   const [selectedImage, setSelectedImage] = useState<HTMLImageElement | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const queue = useRef(Promise.resolve());
@@ -1147,7 +1172,7 @@ function Editor({
   );
   useEffect(() => {
     if (editor.current) editor.current.innerHTML = sanitize(draftRef.current.html);
-  }, [note.id, unlocked]); // Keep selection stable while typing.
+  }, [note.id, unlocked, editing]); // Restore content when entering edit mode without disturbing typing.
   useEffect(() => {
     const capture = () => {
       const s = window.getSelection();
@@ -1214,6 +1239,25 @@ function Editor({
     notify("已設定防窺鎖");
   }
   const paper = dark ? colors[draft.color].dark : colors[draft.color].value;
+  async function togglePin() {
+    const pinned = !draftRef.current.pinned;
+    try {
+      if (desktop && detachedId) await getCurrentWindow().setAlwaysOnTop(pinned);
+      change({ pinned });
+    } catch (error) {
+      notify(`無法變更置頂狀態：${String(error)}`);
+    }
+  }
+  function finishEditing() {
+    if (timer.current) {
+      clearTimeout(timer.current);
+      timer.current = null;
+      persist(draftRef.current);
+    }
+    setPanel(null);
+    setSelectedImage(null);
+    setEditing(false);
+  }
   return (
     <section
       className="note-editor"
@@ -1222,23 +1266,42 @@ function Editor({
       <div className="editor-header">
         <span>
           <StickyNote size={16} />
-          {detachedId ? "桌面便箋" : "編輯便箋"}
+          {detachedId ? (editing ? "編輯模式" : "閱讀模式") : "編輯便箋"}
         </span>
         <div>
-          <IconButton
-            icon={Pin}
-            label={draft.pinned ? "取消置頂" : "置頂"}
-            active={draft.pinned}
-            onClick={() => {
-              change({ pinned: !draft.pinned });
-              if (desktop && detachedId) void getCurrentWindow().setAlwaysOnTop(!draft.pinned);
-            }}
-          />
+          {detachedId && unlocked && (
+            <button
+              className="note-mode-button"
+              onClick={() => (editing ? finishEditing() : setEditing(true))}
+            >
+              {editing ? <Eye size={14} /> : <Pencil size={14} />}
+              {editing ? "完成" : "編輯"}
+            </button>
+          )}
+          {detachedId ? (
+            <button
+              className={`note-pin-button ${draft.pinned ? "is-pinned" : ""}`}
+              aria-pressed={draft.pinned}
+              title="讓便箋顯示在其他視窗上方"
+              onClick={() => void togglePin()}
+            >
+              <Pin size={14} />
+              {draft.pinned ? "取消置頂" : "置頂"}
+            </button>
+          ) : (
+            <IconButton
+              icon={Pin}
+              label={draft.pinned ? "取消置頂" : "置頂"}
+              active={draft.pinned}
+              onClick={() => void togglePin()}
+            />
+          )}
           {!detachedId && <IconButton icon={ArrowUpRight} label="在桌面開啟" onClick={onPopout} />}
           <IconButton
             icon={X}
             label="關閉便箋"
             onClick={() => {
+              if (detachedId) finishEditing();
               if (draftRef.current.pinHash) setUnlocked(false);
               onClose();
             }}
@@ -1274,8 +1337,44 @@ function Editor({
           </button>
           <small>防窺鎖僅遮蔽畫面，不加密本機資料。</small>
         </div>
+      ) : !editing ? (
+        <Fragment key="view">
+          <div className="note-view-title">
+            <h1>{draft.title || "未命名便箋"}</h1>
+          </div>
+          <div
+            className="rich-editor note-view-content"
+            style={{ fontSize: draft.fontSize }}
+            onClick={(e) => {
+              const target = e.target;
+              if (target instanceof HTMLInputElement) e.preventDefault();
+              const anchor = target instanceof Element ? target.closest("a") : null;
+              if (anchor) {
+                e.preventDefault();
+                if (desktop) void openUrl(anchor.href).catch((error) => notify(String(error)));
+                else window.open(anchor.href, "_blank", "noopener");
+              }
+            }}
+            dangerouslySetInnerHTML={{
+              __html: sanitize(draft.html).replace(/<input\b/g, '<input disabled tabindex="-1"'),
+            }}
+          />
+          {!plain(draft.html) && !draft.html.includes("<img") && (
+            <p className="note-view-empty">按右上角「編輯」，寫下你的想法。</p>
+          )}
+          <div className="note-view-footer">
+            <div>
+              {draft.tags.map((t) => (
+                <span className="note-tag" key={t}>
+                  {t}
+                </span>
+              ))}
+            </div>
+            <span>{saveError ? "儲存失敗" : saved ? "已自動儲存" : "儲存中…"}</span>
+          </div>
+        </Fragment>
       ) : (
-        <>
+        <Fragment key="edit">
           <div className="editor-title">
             <input
               placeholder="未命名便箋"
@@ -1694,7 +1793,7 @@ function Editor({
               )}
             </div>
           )}
-        </>
+        </Fragment>
       )}
       <div id="print-note" />
     </section>

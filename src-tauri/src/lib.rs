@@ -71,6 +71,8 @@ async fn open_note(app: tauri::AppHandle, id: String, pinned: bool) -> Result<()
     valid_id(&id)?;
     let label = format!("note-{}", id);
     if let Some(w) = app.get_webview_window(&label) {
+        w.set_always_on_top(pinned).map_err(|e| e.to_string())?;
+        w.emit("note-opened", ()).map_err(|e| e.to_string())?;
         w.show().map_err(|e| e.to_string())?;
         w.set_focus().map_err(|e| e.to_string())?;
     } else {

@@ -71,3 +71,7 @@ cargo test --manifest-path src-tauri/Cargo.toml --lib
 ![Sticky Notes 工作板](screenshots/sticky-notes-workspace.jpg)
 
 `docs/AUTO_UPDATE*`、`docs/GLOBAL_SHORTCUT*`、`docs/I18N*` 為原始範本參考文件，與目前產品範圍不同時，以本 README 為準。自動更新未設定發行服務。
+
+## 獨立桌面便箋
+
+從工作板按「在桌面開啟」，便箋預設以閱讀模式顯示。按右上角「編輯」修改，再按「完成」儲存並回到閱讀模式。右上角「置頂」可讓便箋保持顯示在其他視窗上方；再次按「取消置頂」恢復一般視窗層級。置頂狀態會保存，兩種模式皆可切換。
