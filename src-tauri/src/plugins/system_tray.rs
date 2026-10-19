@@ -54,12 +54,18 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
                             button_state: MouseButtonState::Up,
                             ..
                         } => {
-                            // Left click to show main window
+                            // Toggle the main window; minimized windows should be restored.
                             let app = tray.app_handle();
                             if let Some(window) = app.get_webview_window("main") {
-                                let _ = window.show();
-                                let _ = window.unminimize();
-                                let _ = window.set_focus();
+                                if window.is_visible().unwrap_or(false)
+                                    && !window.is_minimized().unwrap_or(false)
+                                {
+                                    let _ = window.hide();
+                                } else {
+                                    let _ = window.show();
+                                    let _ = window.unminimize();
+                                    let _ = window.set_focus();
+                                }
                             }
                         }
                         _ => {}
