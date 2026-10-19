@@ -39,6 +39,8 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { getCurrentWindow } from "@tauri-apps/api/window";
+import { PhysicalPosition } from "@tauri-apps/api/dpi";
+import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { register, unregister } from "@tauri-apps/plugin-global-shortcut";
 import { openUrl } from "@tauri-apps/plugin-opener";
@@ -164,6 +166,41 @@ export default function App() {
   const [error, setError] = useState("");
   const [alertNote, setAlertNote] = useState<Note | null>(null);
   const [sound, setSound] = useState(() => localStorage.getItem("sticky-sound") !== "false");
+  const [framelessNotes, setFramelessNotes] = useState(
+    () => localStorage.getItem("sticky-frameless-notes") === "true"
+  );
+  const [windowPreferenceReady, setWindowPreferenceReady] = useState(!desktop);
+  const [windowPreferenceBusy, setWindowPreferenceBusy] = useState(false);
+  useEffect(() => {
+    if (!desktop) return;
+    let live = true;
+    void invoke<boolean>("get_note_window_frameless")
+      .then((value) => {
+        if (live) {
+          setFramelessNotes(value);
+          setWindowPreferenceReady(true);
+        }
+      })
+      .catch((error) => {
+        if (live) setToast(`無法讀取視窗偏好：${String(error)}`);
+      });
+    return () => {
+      live = false;
+    };
+  }, []);
+  async function changeNoteTitlebar(frameless: boolean) {
+    setWindowPreferenceBusy(true);
+    try {
+      if (desktop) await invoke("set_note_window_frameless", { frameless });
+      else localStorage.setItem("sticky-frameless-notes", String(frameless));
+      setFramelessNotes(frameless);
+      setToast(desktop ? "已套用獨立便箋的標題列設定" : "已保存預覽偏好；視窗效果請使用桌面版檢視");
+    } catch (error) {
+      setToast(`無法套用視窗偏好：${String(error)}`);
+    } finally {
+      setWindowPreferenceBusy(false);
+    }
+  }
   const notesRef = useRef(notes);
   useEffect(() => {
     notesRef.current = notes;
@@ -854,6 +891,19 @@ export default function App() {
                   ))}
                 </div>
                 <label className="setting-row">
+                  隱藏獨立便箋的系統標題列
+                  <input
+                    type="checkbox"
+                    checked={framelessNotes}
+                    disabled={!windowPreferenceReady || windowPreferenceBusy}
+                    onChange={(e) => void changeNoteTitlebar(e.target.checked)}
+                  />
+                </label>
+                <p className="help">
+                  隱藏系統圖示、標題及最小化／最大化／關閉按鈕，立即套用至所有獨立便箋。拖曳便箋上方的模式名稱可移動視窗，右上角
+                  × 可關閉便箋。
+                </p>
+                <label className="setting-row">
                   提醒音效
                   <input
                     type="checkbox"
@@ -1075,6 +1125,27 @@ function Editor({
   const [editing, setEditing] = useState(!detachedId);
   const draftRef = useRef(note);
   const editor = useRef<HTMLDivElement>(null);
+  type WindowDrag = {
+    pointer: number;
+    startX: number;
+    startY: number;
+    x: number;
+    y: number;
+    origin: PhysicalPosition | null;
+    scale: number;
+  };
+  const windowDrag = useRef<WindowDrag | null>(null);
+  function moveNoteWindow(drag: WindowDrag) {
+    if (!drag.origin) return;
+    void getCurrentWindow()
+      .setPosition(
+        new PhysicalPosition(
+          Math.round(drag.origin.x + (drag.x - drag.startX) * drag.scale),
+          Math.round(drag.origin.y + (drag.y - drag.startY) * drag.scale)
+        )
+      )
+      .catch((error) => notify(`無法移動便箋：${String(error)}`));
+  }
   const [saved, setSaved] = useState(true);
   const [saveError, setSaveError] = useState("");
   const [panel, setPanel] = useState<"reminder" | "lock" | "export" | null>(null);
@@ -1263,7 +1334,57 @@ function Editor({
       className="note-editor"
       style={{ "--paper": paper, "--paper-ink": textColor(paper) } as React.CSSProperties}
     >
-      <div className="editor-header">
+      <div
+        className="editor-header"
+        title={detachedId ? "拖曳此處移動便箋" : undefined}
+        onPointerDown={(event) => {
+          if (
+            !detachedId ||
+            !desktop ||
+            event.button !== 0 ||
+            (event.target instanceof Element && event.target.closest("button"))
+          )
+            return;
+          event.preventDefault();
+          event.currentTarget.setPointerCapture(event.pointerId);
+          const drag: WindowDrag = {
+            pointer: event.pointerId,
+            startX: event.screenX,
+            startY: event.screenY,
+            x: event.screenX,
+            y: event.screenY,
+            origin: null,
+            scale: 1,
+          };
+          windowDrag.current = drag;
+          void Promise.all([getCurrentWindow().outerPosition(), getCurrentWindow().scaleFactor()])
+            .then(([origin, scale]) => {
+              drag.origin = origin;
+              drag.scale = scale;
+              moveNoteWindow(drag);
+            })
+            .catch((error) => notify(`無法移動便箋：${String(error)}`));
+        }}
+        onPointerMove={(event) => {
+          const drag = windowDrag.current;
+          if (!drag || drag.pointer !== event.pointerId) return;
+          drag.x = event.screenX;
+          drag.y = event.screenY;
+          moveNoteWindow(drag);
+        }}
+        onPointerUp={(event) => {
+          const drag = windowDrag.current;
+          if (!drag || drag.pointer !== event.pointerId) return;
+          drag.x = event.screenX;
+          drag.y = event.screenY;
+          moveNoteWindow(drag);
+          windowDrag.current = null;
+          event.currentTarget.releasePointerCapture(event.pointerId);
+        }}
+        onPointerCancel={() => {
+          windowDrag.current = null;
+        }}
+      >
         <span>
           <StickyNote size={16} />
           {detachedId ? (editing ? "編輯模式" : "閱讀模式") : "編輯便箋"}

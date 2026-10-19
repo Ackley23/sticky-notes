@@ -1,11 +1,11 @@
 mod plugins;
-use rusqlite::{params, Connection};
+use rusqlite::{params, Connection, OptionalExtension};
 use std::{fs, path::Path, sync::Mutex};
 use tauri::{Emitter, Manager};
 struct Storage(Mutex<Connection>);
 fn database(path: &Path) -> Result<Connection, String> {
     let conn = Connection::open(path).map_err(|e| e.to_string())?;
-    conn.execute_batch("PRAGMA journal_mode=WAL; PRAGMA synchronous=FULL; CREATE TABLE IF NOT EXISTS notes (id TEXT PRIMARY KEY NOT NULL, payload TEXT NOT NULL);").map_err(|e|e.to_string())?;
+    conn.execute_batch("PRAGMA journal_mode=WAL; PRAGMA synchronous=FULL; CREATE TABLE IF NOT EXISTS notes (id TEXT PRIMARY KEY NOT NULL, payload TEXT NOT NULL); CREATE TABLE IF NOT EXISTS preferences (key TEXT PRIMARY KEY NOT NULL, value TEXT NOT NULL);").map_err(|e|e.to_string())?;
     Ok(conn)
 }
 fn valid_id(id: &str) -> Result<(), String> {
@@ -67,10 +67,17 @@ fn remove_note(
     Ok(())
 }
 #[tauri::command]
-async fn open_note(app: tauri::AppHandle, id: String, pinned: bool) -> Result<(), String> {
+async fn open_note(
+    app: tauri::AppHandle,
+    state: tauri::State<'_, Storage>,
+    id: String,
+    pinned: bool,
+) -> Result<(), String> {
     valid_id(&id)?;
+    let frameless = read_frameless(&*state.0.lock().map_err(|e| e.to_string())?)?;
     let label = format!("note-{}", id);
     if let Some(w) = app.get_webview_window(&label) {
+        w.set_decorations(!frameless).map_err(|e| e.to_string())?;
         w.set_always_on_top(pinned).map_err(|e| e.to_string())?;
         w.emit("note-opened", ()).map_err(|e| e.to_string())?;
         w.show().map_err(|e| e.to_string())?;
@@ -85,10 +92,56 @@ async fn open_note(app: tauri::AppHandle, id: String, pinned: bool) -> Result<()
         .inner_size(390., 500.)
         .min_inner_size(320., 360.)
         .always_on_top(pinned)
+        .decorations(!frameless)
         .build()
         .map_err(|e| e.to_string())?;
     }
     Ok(())
+}
+fn read_frameless(conn: &Connection) -> Result<bool, String> {
+    let value: Option<String> = conn
+        .query_row(
+            "SELECT value FROM preferences WHERE key='note_window_frameless'",
+            [],
+            |row| row.get(0),
+        )
+        .optional()
+        .map_err(|e| e.to_string())?;
+    Ok(value.as_deref() == Some("true"))
+}
+#[tauri::command]
+fn get_note_window_frameless(state: tauri::State<Storage>) -> Result<bool, String> {
+    read_frameless(&*state.0.lock().map_err(|e| e.to_string())?)
+}
+#[tauri::command]
+async fn set_note_window_frameless(
+    app: tauri::AppHandle,
+    state: tauri::State<'_, Storage>,
+    frameless: bool,
+) -> Result<(), String> {
+    let previous = read_frameless(&*state.0.lock().map_err(|e| e.to_string())?)?;
+    let windows: Vec<_> = app
+        .webview_windows()
+        .into_iter()
+        .filter(|(label, _)| label.starts_with("note-"))
+        .map(|(_, window)| window)
+        .collect();
+    let result = (|| -> Result<(), String> {
+        for window in &windows {
+            window
+                .set_decorations(!frameless)
+                .map_err(|e| e.to_string())?;
+        }
+        let conn = state.0.lock().map_err(|e| e.to_string())?;
+        conn.execute("INSERT INTO preferences(key,value) VALUES('note_window_frameless',?1) ON CONFLICT(key) DO UPDATE SET value=excluded.value", [if frameless { "true" } else { "false" }]).map_err(|e| e.to_string())?;
+        Ok(())
+    })();
+    if result.is_err() {
+        for window in &windows {
+            let _ = window.set_decorations(!previous);
+        }
+    }
+    result
 }
 #[tauri::command]
 fn update_tray_menu(
@@ -130,6 +183,8 @@ pub fn run() {
             save_note,
             remove_note,
             open_note,
+            get_note_window_frameless,
+            set_note_window_frameless,
             update_tray_menu,
             exit_app
         ])

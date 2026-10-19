@@ -1718,3 +1718,13 @@ h1 > span {
 .detached .editor-header > div {
   gap: 3px;
 }
+.detached .editor-header {
+  cursor: move;
+  user-select: none;
+}
+.detached .editor-header button {
+  cursor: pointer;
+}
+.detached .editor-header > span svg {
+  pointer-events: none;
+}
