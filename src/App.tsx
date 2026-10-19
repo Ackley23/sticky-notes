@@ -1197,6 +1197,7 @@ function Editor({
   useTranslation("sticky");
   const [draft, setDraft] = useState(note);
   const [editing, setEditing] = useState(!detachedId);
+  const [opacityOpen, setOpacityOpen] = useState(false);
   const [windowFocused, setWindowFocused] = useState(() => !desktop && document.hasFocus());
   useEffect(() => {
     if (!detachedId) return;
@@ -1446,7 +1447,14 @@ function Editor({
         detachedId && !editing ? "note-view-autohide" : "",
         windowFocused ? "window-focused" : "",
       ].join(" ")}
-      style={{ "--paper": paper, "--paper-ink": textColor(paper) } as React.CSSProperties}
+      style={
+        {
+          "--paper": paper,
+          "--paper-ink": textColor(paper),
+          opacity:
+            detachedId && draft.pinned && !windowFocused ? (draft.inactiveOpacity ?? 0.7) : 1,
+        } as React.CSSProperties
+      }
     >
       <div
         className="editor-header"
@@ -1504,6 +1512,18 @@ function Editor({
           {detachedId ? (editing ? tr("編輯模式") : tr("閱讀模式")) : tr("編輯便箋")}
         </span>
         <div>
+          {detachedId && (
+            <button
+              className="note-opacity-button"
+              aria-label={tr("失焦透明度設定")}
+              aria-expanded={opacityOpen}
+              title={tr("失焦透明度設定")}
+              onClick={() => setOpacityOpen((open) => !open)}
+            >
+              <Eye size={14} />
+              {Math.round((draft.inactiveOpacity ?? 0.7) * 100)}%
+            </button>
+          )}
           {detachedId && unlocked && (
             <button
               className="note-mode-button"
@@ -1545,6 +1565,23 @@ function Editor({
           />
         </div>
       </div>
+      {detachedId && opacityOpen && (
+        <div className="note-opacity-panel">
+          <label>
+            <span>{tr("失焦時的不透明度")}</span>
+            <input
+              type="range"
+              min="30"
+              max="100"
+              step="5"
+              value={Math.round((draft.inactiveOpacity ?? 0.7) * 100)}
+              onChange={(event) => change({ inactiveOpacity: Number(event.target.value) / 100 })}
+            />
+          </label>
+          <p>{tr("僅置頂且失焦時生效；100% 關閉透明效果。")}</p>
+          <button onClick={() => setOpacityOpen(false)}>{tr("完成")}</button>
+        </div>
+      )}
       {!unlocked ? (
         <div className="lock-screen">
           <div className="blur-paper" aria-hidden="true">

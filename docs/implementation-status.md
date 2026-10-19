@@ -87,3 +87,11 @@ Windows 獨立便箋已重新實測：內容與富文字工具列正常顯示，
 - 隱藏時保留工具列高度，避免內容跳動；隱藏控制項不接受點擊或鍵盤焦點。主畫面編輯器不受影響。
 - 原生焦點監聽包含初始狀態讀取、非同步競態保護與卸載清理。
 - TypeScript、ESLint、Prettier、三語系檢查與 Vite 建置通過；瀏覽器確認閱讀／編輯模式切換正常。原生視窗失焦與滑鼠移入仍需實機確認。
+
+### 置頂便箋失焦透明度（2026-10-19）
+
+- 獨立便箋 editor-header 新增不透明度控制，30%–100%、每次 5%，預設 70%；100% 停用透明效果。
+- 僅 pinned 且原生視窗失焦時套用；取得焦點或取消置頂立即恢復不透明。各便箋設定隨內容自動保存，舊資料預設 70%，匯入／載入時限制有效範圍。
+- 獨立原生視窗啟用透明背景，HTML 根背景同步透明，讓底下的桌面內容可見；主視窗維持原設定。macOS 啟用 Tauri macos-private-api／macOSPrivateApi 以支援透明視窗，尚未在 macOS／Linux 實測。原生作業系統標題列不套用內容透明度。
+- 實作依據：https://docs.rs/tauri/latest/tauri/webview/struct.WebviewWindowBuilder.html#method.transparent
+- TypeScript、ESLint、Prettier、三語系檢查（225 鍵）、Vite、Rust 兩項測試、Windows debug 建置通過。瀏覽器驗證滑桿數值與自動儲存；原生操作兩次偵測使用者輸入，停止 UI 測試，失焦透視效果尚待實測。

@@ -92,6 +92,7 @@ async fn open_note(
         .inner_size(390., 500.)
         .min_inner_size(320., 360.)
         .always_on_top(pinned)
+        .transparent(true)
         .decorations(!frameless)
         .build()
         .map_err(|e| e.to_string())?;

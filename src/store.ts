@@ -75,6 +75,7 @@ export interface Note {
   pinHash: string;
   salt: string;
   fontSize: number;
+  inactiveOpacity: number;
 }
 export function createNote(): Note {
   const now = Date.now();
@@ -94,6 +95,7 @@ export function createNote(): Note {
     pinHash: "",
     salt: "",
     fontSize: 16,
+    inactiveOpacity: 0.7,
   };
 }
 export function plain(html: string) {
@@ -224,6 +226,10 @@ export async function loadNotes(): Promise<Note[]> {
       tags: Array.isArray(n.tags) ? n.tags.filter((t) => typeof t === "string") : [],
       color: Math.max(0, Math.min(7, Math.floor(Number(n.color) || 0))),
       fontSize: Math.max(12, Math.min(36, Number(n.fontSize) || 16)),
+      inactiveOpacity:
+        typeof n.inactiveOpacity === "number" && Number.isFinite(n.inactiveOpacity)
+          ? Math.max(0.3, Math.min(1, n.inactiveOpacity))
+          : 0.7,
     }));
 }
 export async function saveNote(note: Note) {

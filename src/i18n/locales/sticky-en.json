@@ -220,5 +220,8 @@
   "設計會議筆記": "Design meeting notes",
   "<p>好的工具，應該安靜地陪伴。</p><br><ul><li>減少打斷，保留專注</li><li>用顏色讓資訊自然分類</li><li>每一次輸入都值得被保存</li></ul>": "<p>A good tool quietly supports your work.</p><br><ul><li>Fewer interruptions, more focus</li><li>Let colors organize information</li><li>Every thought deserves to be saved</li></ul>",
   "一些值得記住的小事": "Little things worth keeping",
-  "<p>下午的陽光、剛煮好的咖啡，</p><p>還有突然想到的一個好點子。</p><br><p>把日常喜歡的片刻，慢慢收集起來。 ☕</p>": "<p>Afternoon sunshine, fresh coffee,</p><p>and an idea that arrives out of nowhere.</p><br><p>Collect the little moments you love. ☕</p>"
+  "<p>下午的陽光、剛煮好的咖啡，</p><p>還有突然想到的一個好點子。</p><br><p>把日常喜歡的片刻，慢慢收集起來。 ☕</p>": "<p>Afternoon sunshine, fresh coffee,</p><p>and an idea that arrives out of nowhere.</p><br><p>Collect the little moments you love. ☕</p>",
+  "失焦透明度設定": "Inactive opacity settings",
+  "失焦時的不透明度": "Opacity when inactive",
+  "僅置頂且失焦時生效；100% 關閉透明效果。": "Only while pinned and inactive; 100% disables transparency."
 }
