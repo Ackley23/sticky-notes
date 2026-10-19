@@ -1785,6 +1785,17 @@ body:has(.detached) {
 .detached .editor-header > span svg {
   pointer-events: none;
 }
+.detached .note-editor:not(.window-focused) ::-webkit-scrollbar {
+  width: 3px;
+  height: 3px;
+}
+.detached .note-editor:not(.window-focused) ::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--paper-ink) 35%, transparent);
+  border-radius: 3px;
+}
+.detached .note-editor:not(.window-focused) ::-webkit-scrollbar-track {
+  background: transparent;
+}
 .setting-row input[type="checkbox"] {
   flex-shrink: 0;
 }
