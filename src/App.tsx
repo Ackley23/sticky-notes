@@ -1452,7 +1452,9 @@ function Editor({
           "--paper": paper,
           "--paper-ink": textColor(paper),
           opacity:
-            detachedId && draft.pinned && !windowFocused ? (draft.inactiveOpacity ?? 0.7) : 1,
+            detachedId && (opacityOpen || (draft.pinned && !windowFocused))
+              ? (draft.inactiveOpacity ?? 0.7)
+              : 1,
         } as React.CSSProperties
       }
     >
@@ -1578,7 +1580,7 @@ function Editor({
               onChange={(event) => change({ inactiveOpacity: Number(event.target.value) / 100 })}
             />
           </label>
-          <p>{tr("僅置頂且失焦時生效；100% 關閉透明效果。")}</p>
+          <p>{tr("調整時即時預覽；關閉後僅置頂且失焦時生效。")}</p>
           <button onClick={() => setOpacityOpen(false)}>{tr("完成")}</button>
         </div>
       )}

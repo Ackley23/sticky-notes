@@ -95,3 +95,9 @@ Windows 獨立便箋已重新實測：內容與富文字工具列正常顯示，
 - 獨立原生視窗啟用透明背景，HTML 根背景同步透明，讓底下的桌面內容可見；主視窗維持原設定。macOS 啟用 Tauri macos-private-api／macOSPrivateApi 以支援透明視窗，尚未在 macOS／Linux 實測。原生作業系統標題列不套用內容透明度。
 - 實作依據：https://docs.rs/tauri/latest/tauri/webview/struct.WebviewWindowBuilder.html#method.transparent
 - TypeScript、ESLint、Prettier、三語系檢查（225 鍵）、Vite、Rust 兩項測試、Windows debug 建置通過。瀏覽器驗證滑桿數值與自動儲存；原生操作兩次偵測使用者輸入，停止 UI 測試，失焦透視效果尚待實測。
+
+### 透明度即時預覽（2026-10-19）
+
+- 開啟透明度設定面板時，即使視窗已取得焦點，也立即以滑桿數值預覽便箋不透明度；未置頂時也可暫時預覽。
+- 關閉面板後結束預覽，恢復僅置頂且失焦時套用，100% 仍可關閉透明效果。每張便箋數值持續自動保存。
+- 三語系說明同步更新；TypeScript、ESLint、三語系檢查、Vite 建置與 diff 檢查通過。
