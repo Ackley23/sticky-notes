@@ -80,7 +80,7 @@
   "深色": "Dark",
   "系統": "System",
   "隱藏獨立便箋的系統標題列": "Hide desktop note system title bars",
-  "隱藏系統圖示、標題及最小化／最大化／關閉按鈕，立即套用至所有獨立便箋。拖曳便箋上方的模式名稱可移動視窗，右上角 × 可關閉便箋。": "Hide system icons, titles and window buttons for all desktop notes. Drag the mode label to move a note; use × to close it.",
+  "隱藏系統圖示、標題及最小化／最大化／關閉按鈕，立即套用至所有獨立便箋。拖曳便箋上方的模式名稱可移動視窗，右上角 × 可關閉便箋。": "Hide system icons, titles and window buttons for all desktop notes. Drag the empty area in the header to move a note; use × to close it.",
   "提醒音效": "Reminder sounds",
   "自訂提醒鈴聲": "Custom ringtone",
   "選擇提醒鈴聲": "Choose a ringtone",
@@ -223,5 +223,8 @@
   "<p>下午的陽光、剛煮好的咖啡，</p><p>還有突然想到的一個好點子。</p><br><p>把日常喜歡的片刻，慢慢收集起來。 ☕</p>": "<p>Afternoon sunshine, fresh coffee,</p><p>and an idea that arrives out of nowhere.</p><br><p>Collect the little moments you love. ☕</p>",
   "失焦透明度設定": "Inactive opacity settings",
   "失焦時的不透明度": "Opacity when inactive",
-  "調整時即時預覽；關閉後僅置頂且失焦時生效。": "Live preview while adjusting; after closing, applies only when pinned and inactive."
+  "調整時即時預覽；關閉後僅置頂且失焦時生效。": "Live preview while adjusting; after closing, applies only when pinned and inactive.",
+  "Windows 登入時自動啟動": "Launch at Windows sign-in",
+  "無法存取自動啟動設定：{{p0}}": "Unable to access startup settings: {{p0}}",
+  "自動啟動 Sticky Notes；僅適用 Windows 桌面版，不會變更其他程式的啟動設定。": "Start Sticky Notes automatically. Available in the Windows desktop app; other programs are unaffected."
 }

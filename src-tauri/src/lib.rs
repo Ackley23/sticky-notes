@@ -156,6 +156,48 @@ fn update_tray_menu(
 fn exit_app(app: tauri::AppHandle) {
     app.exit(0)
 }
+#[tauri::command]
+fn get_startup_enabled(app: tauri::AppHandle) -> Result<Option<bool>, String> {
+    #[cfg(target_os = "windows")]
+    {
+        use tauri_plugin_autostart::ManagerExt;
+        app.autolaunch()
+            .is_enabled()
+            .map(Some)
+            .map_err(|e| e.to_string())
+    }
+    #[cfg(not(target_os = "windows"))]
+    {
+        let _ = app;
+        Ok(None)
+    }
+}
+#[tauri::command]
+fn set_startup_enabled(
+    window: tauri::WebviewWindow,
+    app: tauri::AppHandle,
+    enabled: bool,
+) -> Result<(), String> {
+    if window.label() != "main" {
+        return Err("Startup settings are only available in the main window".into());
+    }
+    #[cfg(target_os = "windows")]
+    {
+        use tauri_plugin_autostart::ManagerExt;
+        let launcher = app.autolaunch();
+        if enabled {
+            launcher.enable()
+        } else {
+            launcher.disable()
+        }
+        .map_err(|e| e.to_string())
+    }
+    #[cfg(not(target_os = "windows"))]
+    {
+        let _ = (app, enabled);
+        Err("Startup settings require Windows".into())
+    }
+}
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     let builder = tauri::Builder::default()
@@ -178,6 +220,8 @@ pub fn run() {
         }))
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())
         .plugin(plugins::system_tray::init());
+    #[cfg(target_os = "windows")]
+    let builder = builder.plugin(tauri_plugin_autostart::Builder::new().build());
     builder
         .invoke_handler(tauri::generate_handler![
             load_notes,
@@ -187,6 +231,8 @@ pub fn run() {
             get_note_window_frameless,
             set_note_window_frameless,
             update_tray_menu,
+            get_startup_enabled,
+            set_startup_enabled,
             exit_app
         ])
         .run(tauri::generate_context!())

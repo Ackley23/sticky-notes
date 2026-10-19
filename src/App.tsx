@@ -197,6 +197,40 @@ export default function App() {
   );
   const [windowPreferenceReady, setWindowPreferenceReady] = useState(!desktop);
   const [windowPreferenceBusy, setWindowPreferenceBusy] = useState(false);
+  const [startupEnabled, setStartupEnabled] = useState<boolean | null>(null);
+  const [startupBusy, setStartupBusy] = useState(false);
+  const [startupError, setStartupError] = useState("");
+  useEffect(() => {
+    if (!desktop || detachedId || modal !== "settings") return;
+    let live = true;
+    setStartupBusy(true);
+    setStartupError("");
+    void invoke<boolean | null>("get_startup_enabled")
+      .then((enabled) => {
+        if (live) setStartupEnabled(enabled);
+      })
+      .catch((error) => {
+        if (live) setStartupError(String(error));
+      })
+      .finally(() => {
+        if (live) setStartupBusy(false);
+      });
+    return () => {
+      live = false;
+    };
+  }, [modal]);
+  async function changeStartup(enabled: boolean) {
+    setStartupBusy(true);
+    setStartupError("");
+    try {
+      await invoke("set_startup_enabled", { enabled });
+      setStartupEnabled(await invoke<boolean>("get_startup_enabled"));
+    } catch (error) {
+      setStartupError(String(error));
+    } finally {
+      setStartupBusy(false);
+    }
+  }
   useEffect(() => {
     if (!desktop) return;
     let live = true;
@@ -929,6 +963,23 @@ export default function App() {
                 </label>
                 <p className="help">{tr("語言偏好會保存，並套用至所有便箋視窗。")}</p>
                 <label className="setting-row">
+                  {tr("Windows 登入時自動啟動")}
+                  <input
+                    type="checkbox"
+                    checked={startupEnabled === true}
+                    disabled={!desktop || startupEnabled === null || startupBusy || !!startupError}
+                    onChange={(event) => void changeStartup(event.target.checked)}
+                  />
+                </label>
+                <p className="help">
+                  {tr("自動啟動 Sticky Notes；僅適用 Windows 桌面版，不會變更其他程式的啟動設定。")}
+                </p>
+                {startupError && (
+                  <p className="inline-error">
+                    {tr("無法存取自動啟動設定：{{p0}}", { p0: startupError })}
+                  </p>
+                )}
+                <label className="setting-row">
                   {tr("外觀主題")}{" "}
                   <select value={theme} onChange={(e) => setTheme(e.target.value as Theme)}>
                     <option value="system">{tr("跟隨系統")}</option>
@@ -1509,10 +1560,24 @@ function Editor({
           windowDrag.current = null;
         }}
       >
-        <span>
-          <StickyNote size={16} />
-          {detachedId ? (editing ? tr("編輯模式") : tr("閱讀模式")) : tr("編輯便箋")}
-        </span>
+        {detachedId ? (
+          <span>
+            {unlocked && (
+              <button
+                className="note-mode-button"
+                onClick={() => (editing ? finishEditing() : setEditing(true))}
+              >
+                {editing ? <Eye size={14} /> : <Pencil size={14} />}
+                {editing ? tr("完成") : tr("編輯")}
+              </button>
+            )}
+          </span>
+        ) : (
+          <span>
+            <StickyNote size={16} />
+            {tr("編輯便箋")}
+          </span>
+        )}
         <div>
           {detachedId && (
             <button
@@ -1524,15 +1589,6 @@ function Editor({
             >
               <Eye size={14} />
               {Math.round((draft.inactiveOpacity ?? 0.7) * 100)}%
-            </button>
-          )}
-          {detachedId && unlocked && (
-            <button
-              className="note-mode-button"
-              onClick={() => (editing ? finishEditing() : setEditing(true))}
-            >
-              {editing ? <Eye size={14} /> : <Pencil size={14} />}
-              {editing ? tr("完成") : tr("編輯")}
             </button>
           )}
           {detachedId ? (
