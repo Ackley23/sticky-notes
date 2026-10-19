@@ -1328,6 +1328,7 @@ h1 > span {
   }
 }
 .detached {
+  --note-header-height: 27px;
   height: 100vh;
 }
 :root:has(.detached),
@@ -1346,7 +1347,7 @@ body:has(.detached) {
 }
 .note-opacity-panel {
   position: absolute;
-  top: 53px;
+  top: var(--note-header-height);
   right: 10px;
   z-index: 10;
   width: min(280px, calc(100% - 20px));
@@ -1757,8 +1758,8 @@ body:has(.detached) {
   padding: 0 22px 20px;
 }
 .detached .editor-header {
-  padding-left: 12px;
-  padding-right: 10px;
+  height: var(--note-header-height);
+  padding: 1px 10px 1px 12px;
 }
 .detached .editor-header > div {
   gap: 3px;
@@ -1773,7 +1774,13 @@ body:has(.detached) {
   user-select: none;
 }
 .detached .editor-header button {
+  height: 23px;
+  padding-top: 2px;
+  padding-bottom: 2px;
   cursor: pointer;
+}
+.detached .editor-header .icon-button {
+  width: 23px;
 }
 .detached .editor-header > span svg {
   pointer-events: none;
